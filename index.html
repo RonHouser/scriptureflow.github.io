@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <title>Scripture Flow | KJV Typing Meditation</title>
+    <meta name="description" content="Type verses from the King James Bible. Let the Word guide your fingers." />
+    <!-- PWA Manifest -->
+    <link rel="manifest" href='data:application/manifest+json,{
+      "name": "Scripture Flow",
+      "short_name": "KJV Flow",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#0a0e1a",
+      "theme_color": "#0a0e1a",
+      "icons": [{
+        "src": "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%2B%3C/text%3E%3C/svg%3E",
+        "sizes": "any",
+        "type": "image/svg+xml"
+      }]
+    }' />
+    <!-- Fonts -->
+    <link href="https://rsms.me/inter/inter.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        :root {
+            --bg-start: #0a0e1a;
+            --bg-end: #1a2332;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #60a5fa;
+            --accent-hover: #3b82f6;
+            --correct: #86efac;
+            --incorrect: #fca5a5;
+            --glow: 0 0 40px rgba(255, 255, 255, 0.7);
+            --completion-glow: 0 0 60px rgba(255, 255, 255, 0.9);
+            --bubble-bg: rgba(255, 255, 255, 0.1);
+            --bubble-green: #10b981;
+            --bubble-yellow: #facc15;
+            --bubble-border: rgba(255, 255, 255, 0.2);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+        body {
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            color: var(--text);
+            background-attachment: fixed;
+            position: relative;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(96,165,250,0.15), transparent);
+            filter: blur(40px);
+            pointer-events: none;
+            animation: float 20s infinite ease-in-out;
+        }
+        .orb:nth-child(1) { width: 400px; height: 400px; top: 10%; left: 10%; animation-delay: 0s; }
+        .orb:nth-child(2) { width: 600px; height: 600px; top: 60%; right: 15%; animation-delay: 7s; }
+        .orb:nth-child(3) { width: 300px; height: 300px; bottom: 20%; left: 50%; animation-delay: 14s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-60px) scale(1.1); }
+        }
+        #app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 2rem;
+            padding: 2.5rem 2rem;
+            max-width: 900px;
+            width: 100%;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.37),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #main-menu {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        #main-menu h1 {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #main-menu p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+        .mode-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .mode-btn {
+            position: relative;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4);
+        }
+        .mode-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(96, 165, 250, 0.5);
+        }
+        .tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-end);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            margin-top: 1rem;
+            z-index: 1001;
+        }
+        .mode-btn:hover .tooltip {
+            opacity: 1;
+        }
+        .tooltip h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .tooltip p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        #game-ui { display: none; }
+        /* UPDATED: Mario UI Styles */
+        #mario-ui {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            justify-content: center;
+            align-items: center;
+        }
+        #mario-ui h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        .iframe-container {
+            position: relative;
+            width: 75%;
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+	    margin: 1.5rem auto 0;
+        }
+        #mario-iframe {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 1rem;
+            border: 5px solid var(--glass-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        @media (max-width: 40px) {
+            #mario-ui { padding: 0.5rem; }
+        }
+        #verse {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.6rem, 4vw, 2.1rem);
+            line-height: 1.85;
+            letter-spacing: 0.6px;
+            margin-bottom: 1.8rem;
+            min-height: 6rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            word-spacing: 0.15em;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+        .word { display: inline-block; white-space: nowrap; }
+        .letter {
+            display: inline-block;
+            min-width: 1ch;
+            padding: 0 .06ch;
+            border-radius: 6px;
+            color: var(--text);
+            white-space: pre;
+        }
+        .space { display: inline-block; min-width: 0.3ch; }
+        .letter.correct { color: var(--correct); }
+        .letter.error { color: var(--incorrect); animation: shake 0.3s ease; }
+        .letter.invisible { color: transparent; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        #ref {
+            font-style: italic;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        #hidden-input {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #progress-link, #menu-link {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.75rem 1.6rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        #progress-link:hover, #menu-link:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
+        }
+        #volume-control {
+            position: fixed;
+            bottom: 1.8rem;
+            right: 2.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        #volume-control:hover {
+            opacity: 1;
+        }
+        #volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+        }
+        .loading {
+            color: var(--text-muted);
+            font-style: italic;
+            animation: breathe 2s infinite ease-in-out;
+        }
+        @keyframes breathe {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        #progress-modal, #memory-modal, #ref-selector-modal, #confirm-clear-modal, #confirm-delete-modal, #create-profile-modal, #confirm-delete-memory-modal, #custom-alert-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+        #progress-modal .card, #memory-modal .card, #ref-selector-modal .card {
+            max-width: 820px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        #progress-modal h2, #memory-modal h2, #ref-selector-modal h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        #stats, #memory-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+            margin: 0 auto 1.8rem;
+            flex: 1;
+        }
+        #selector-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 1rem;
+        }
+        .stat {
+            background: var(--bubble-bg);
+            padding: 1.2rem;
+            border-radius: 1.8rem;
+            text-align: center;
+            border: 1px solid var(--bubble-border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            position: relative;
+        }
+        .stat:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        }
+        .stat strong {
+            display: block;
+            font-size: 1.9rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .stat small {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 0.0rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            color: white;
+            border: none;
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+    font-size: 0.8rem;
+         font-weight: bold;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         z-index: 10;
+         pointer-events: auto;
+        }
+.memory-bubble:hover .delete-btn,
+.stat:hover .delete-btn {
+        opacity: 0.3;
+}
+.memory-bubble .delete-btn:hover,
+.stat .delete-btn:hover {
+    opacity: 0.8;
+    color: red;
+}
+        .stat:hover .delete-btn {
+            opacity: 1;
+        }
+        #detail-view {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        #detail-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
+            text-align: center;
+            color: var(--accent);
+        }
+        #detail-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0.5rem 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) rgba(255,255,255,0.1);
+        }
+        #detail-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        #detail-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        #detail-content::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        #selector-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        #selector-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        #selector-content::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        #back-btn, #selector-back {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.15);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+            padding: 0.6rem 1.2rem;
+            border-radius: 1.2rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+        #back-btn:hover, #selector-back:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        .books-grid, .chapters-grid, .verses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .book-bubble, .chapter-bubble, .verse-bubble, .memory-bubble {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.58rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.3rem;
+            transition: all 0.3s ease;
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            box-shadow:
+                inset 0 2px 6px rgba(255,255,255,0.15),
+                0 2px 8px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .book-bubble::before, .chapter-bubble::before, .verse-bubble::before, .memory-bubble::before {
+            content: '';
+            position: absolute;
+            top: 10%; left: 10%;
+            width: 30%; height: 30%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .book-bubble.complete, .chapter-bubble.complete, .verse-bubble.complete, .memory-bubble.complete {
+            background: linear-gradient(135deg, rgba(16,185,129,0.7), rgba(5,150,105,0.7));
+            border-color: #10b981;
+            color: white;
+            box-shadow:
+                inset 0 2px 8px rgba(255,255,255,0.3),
+                0 0 16px rgba(16,185,129,0.5);
+        }
+        .book-bubble.partial, .chapter-bubble.partial, .verse-bubble.partial, .memory-bubble.partial {
+            background: linear-gradient(135deg, rgba(250,204,21,0.7), rgba(251,191,36,0.7));
+            border-color: #facc15;
+            color: #1f2937;
+            box-shadow:
+                inset 0 2px 8px rgba(255,255,255,0.3),
+                0 0 16px rgba(250,204,21,0.4);
+        }
+        .book-bubble:hover, .chapter-bubble:hover, .verse-bubble:hover, .memory-bubble:hover {
+            transform: scale(1.12);
+            box-shadow: 0 0 24px rgba(96,165,250,0.6);
+            z-index: 1;
+        }
+        .book-bubble .book-name, .chapter-bubble .chapter-num, .verse-bubble .verse-num, .memory-bubble .memory-ref {
+            line-height: 1.1;
+            max-height: 2.2em;
+            overflow: hidden;
+        }
+        .book-bubble .book-count, .chapter-bubble .chapter-count, .memory-bubble .memory-count {
+            font-size: 0.45rem;
+            margin-top: 0.15rem;
+            opacity: 0.9;
+        }
+        .chapter-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            line-height: 2;
+            color: var(--text-muted);
+            padding: 1rem 0.5rem;
+            overflow-x: hidden;
+        }
+        .chapter-text .verse {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .chapter-text .verse-number {
+            font-size: 0.8rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .chapter-text .verse-text {
+            flex: 1;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+        }
+        .chapter-text .completed {
+            color: var(--text);
+        }
+        .verse-btn {
+         position: relative;
+         background: transparent;
+         border: none;
+         color: var(--accent);
+         font-size: 1.2rem;
+         cursor: pointer;
+         padding: 0.2rem;
+         transition: all 0.25s ease;
+         flex-shrink: 0;
+         border-radius: 50%;
+         width: 32px;
+         height: 32px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+    opacity: 0.6;
+}
+.verse-btn:hover {
+         color: var(--accent);
+         transform: scale(1.15);
+         background: transparent;
+    opacity: 1;
+         z-index: 1;
+}
+        .verse-btn:hover i {
+            filter: drop-shadow(0 0 8px var(--accent-hover));
+        }
+        .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            margin-top: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .modal-actions button {
+            min-width: 110px;
+            padding: 0.75rem 1.4rem;
+            border: none;
+            border-radius: 1.2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        #close-modal, #close-memory, #close-selector { background: #64748b; }
+        #close-modal:hover, #close-memory:hover, #close-selector:hover { background: #475569; transform: translateY(-2px); }
+        #export-progress, #add-memory { background: #10b981; }
+        #export-progress:hover, #add-memory:hover { background: #059669; transform: translateY(-2px); }
+        #clear-progress { background: #ef4444; }
+        #clear-progress:hover { background: #dc2626; transform: translateY(-2px); }
+        .completion-glow {
+            animation: completionPulse 1.8s ease-out;
+            box-shadow: var(--completion-glow);
+        }
+        @keyframes completionPulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+            30% { box-shadow: var(--completion-glow); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        .stat-detail {
+            padding: 1.2rem;
+            background: var(--bubble-bg);
+            border-radius: 1.8rem;
+            border: 1px solid var(--bubble-border);
+            line-height: 1.6;
+            color: var(--text);
+        }
+        .stat-detail strong {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+        .stat-detail p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 640px) {
+            .card { padding: 2rem 1.5rem; }
+            #verse { font-size: 1.5rem; }
+            #volume-control { right: 1.5rem; bottom: 1.5rem; width: 160px; }
+            #volume-slider { width: 80px; }
+            .modal-actions { flex-direction: column; align-items: center; }
+            .modal-actions button { width: 100%; max-width: 200px; }
+            #stats, #memory-content { grid-template-columns: repeat(1, 1fr); gap: 1rem; }
+            .books-grid, .chapters-grid, .verses-grid { grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 0.6rem; }
+            .book-bubble, .chapter-bubble, .verse-bubble { font-size: 0.52rem; }
+            .chapter-text { font-size: 1.1rem; }
+            .mode-buttons { flex-direction: column; }
+            #bottom-controls { flex-direction: column; gap: 0.5rem; }
+        }
+        #progress-modal .card, #memory-modal .card, #ref-selector-modal .card {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+        .books-grid,
+        .chapters-grid,
+        .verses-grid {
+            overflow: visible !important;
+            padding: 0.8rem 1.5rem;
+            gap: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+        }
+        .book-bubble,
+        .chapter-bubble,
+        .verse-bubble {
+            position: relative;
+            z-index: 1;
+        }
+        .book-bubble:hover,
+        .chapter-bubble:hover,
+        .verse-bubble:hover {
+            transform: scale(1.12);
+            box-shadow: 0 0 20px rgba(96,165,250,0.6);
+            z-index: 20;
+        }
+        @media (max-width: 640px) {
+            .books-grid,
+            .chapters-grid,
+            .verses-grid {
+                grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+                gap: 0.7rem;
+                padding: 0.6rem 0.4rem;
+            }
+            .book-bubble:hover,
+            .chapter-bubble:hover,
+            .verse-bubble:hover {
+                transform: scale(1.08);
+            }
+        }
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        #confirm-clear-modal .card, #confirm-delete-modal .card, #create-profile-modal .card, #confirm-delete-memory-modal .card, #custom-alert-modal .card {
+            max-width: 500px;
+            padding: 1.5rem;
+        }
+        #confirm-clear-modal h3, #confirm-delete-modal h3, #confirm-delete-memory-modal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--incorrect);
+        }
+        #confirm-clear-modal p, #confirm-delete-modal p, #confirm-delete-memory-modal p {
+            margin-bottom: 1rem;
+        }
+        #confirm-input, #delete-input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            border-radius: 0.5rem;
+        }
+        #confirm-clear, #confirm-delete {
+            background: #808080;
+            color: white;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.75rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: not-allowed;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        #confirm-clear.enabled, #confirm-delete.enabled {
+            background: #ef4444;
+            cursor: pointer;
+        }
+        #confirm-clear.enabled:hover, #confirm-delete.enabled:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        #confirm-clear-modal .modal-actions, #confirm-delete-modal .modal-actions, #confirm-delete-memory-modal .modal-actions {
+            justify-content: flex-end;
+        }
+        #cancel-clear, #cancel-delete, #cancel-delete-memory {
+            background: #64748b;
+            margin-right: 0.8rem;
+        }
+        #cancel-clear:hover, #cancel-delete:hover, #cancel-delete-memory:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+        .phrase-span.correct {
+            color: var(--text);
+        }
+        #profile-control {
+            position: fixed;
+            bottom: 1.8rem;
+            left: 2.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.5;
+            transition: opacity 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        #profile-control:hover {
+            opacity: 1;
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        #bottom-controls {
+            position: fixed;
+            bottom: 1.8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+        #progress-control {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.5;
+            transition: opacity 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        #progress-control:hover {
+            opacity: 1;
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        /* UPDATED: Mario Control Styles (copied from progress/menu) */
+        #menu-control {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.5;
+            transition: opacity 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        #menu-control:hover {
+            opacity: 1;
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        #mario-control {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.5;
+            transition: opacity 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        #mario-control:hover {
+            opacity: 1;
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        #profile-list {
+            position: fixed;
+            bottom: 4rem;
+            left: 2.8rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+        #profile-list button {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            color: var(--text-muted);
+        }
+        #profile-list button.current {
+            color: var(--text);
+        }
+        #profile-list button:hover {
+            background: var(--glass);
+        }
+        #profile-list .add-btn {
+            color: var(--text);
+        }
+        #profile-list .delete-btn {
+            color: var(--incorrect);
+        }
+        .confirm-input-wrapper {
+            position: relative;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        #confirm-ghost, #delete-ghost {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0.5rem;
+            color: var(--text-muted);
+            pointer-events: none;
+            white-space: pre;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        #confirm-input, #delete-input {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: transparent;
+            caret-color: transparent;
+            outline: none;
+        }
+        #confirm-input::selection, #delete-input::selection {
+            color: transparent;
+            background: transparent;
+        }
+        #new-profile-input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            border-radius: 0.5rem;
+            outline: none;
+        }
+        #confirm-create {
+            background: #808080;
+            color: white;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.75rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: not-allowed;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        #confirm-create.enabled {
+            background: #10b981;
+            cursor: pointer;
+        }
+        #confirm-create.enabled:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        #cancel-create {
+            background: #64748b;
+            margin-right: 0.8rem;
+        }
+        #cancel-create:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+        #delete-profile-name, #delete-memory-name {
+            color: var(--accent);
+        }
+        #chapter-options {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        #type-chapter {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+            width: auto;
+        }
+        #type-chapter:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
+        }
+        #custom-alert-modal .card {
+            text-align: center;
+        }
+        #custom-alert-message {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+        #custom-alert-ok {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.75rem 1.6rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+        }
+        #custom-alert-ok:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
+        }
+.mode-btn i {
+    width: 32px;
+    height: 32px;
+    stroke: currentColor; /* Inherits --accent blue */
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    transition: all 0.3s ease;
+}
+.mode-btn:hover i {
+    stroke: var(--accent-hover); /* Darker blue on hover */
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 8px var(--accent-hover));
+}
+#confirm-delete-memory {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 1.2rem;
+    padding: 0.75rem 1.4rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+#confirm-delete-memory:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <!-- Floating Orbs -->
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div id="app">
+        <!-- MAIN MENU -->
+        <div id="main-menu" class="card">
+            <h1>Scripture Flow</h1>
+            <p>Type verses from the King James Bible.
+Let the Word guide your fingers.</p>
+            <div class="mode-buttons">
+    <button id="random-btn" class="mode-btn">
+        <i data-lucide="shuffle"></i>
+        <div class="tooltip"><h3>Random</h3><p>Let the verses flow randomly</p></div>
+    </button>
+    <button id="memory-btn" class="mode-btn">
+        <i data-lucide="brain"></i>
+        <div class="tooltip"><h3>Memory</h3><p>Memorize verses by fading words</p></div>
+    </button>
+    <button id="choice-btn" class="mode-btn">
+        <i data-lucide="list"></i>
+        <div class="tooltip"><h3>Choice</h3><p>Select specific verses or chapters</p></div>
+    </button>
+</div>
+        </div>
+        <!-- GAME UI -->
+        <div id="game-ui" class="card">
+            <div id="verse" class="loading">Loading scripture and ambient flow…</div>
+            <input id="hidden-input" type="text" autocomplete="off" autocapitalize="off" />
+            <div id="ref"></div>
+        </div>
+        <!-- UPDATED: Mario Game UI -->
+        <div id="mario-ui" class="card">
+            <h2>Mario Teaches Typing</h2>
+	    <p style="color: #888; font-size: 0.85em; margin: 8px 0;">
+        Click in the window to engage • Press ESC to exit
+    </p>
+            <div class="iframe-container">
+                <iframe id="mario-iframe" src="https://archive.org/embed/msdos_Mario_Teaches_Typing_1992" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen tabindex="0"></iframe>
+            </div>
+        </div>
+    </div>
+    <!-- Volume -->
+    <div id="volume-control">
+        <span>Volume</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.15" />
+        <span id="volume-value">15%</span>
+    </div>
+    <!-- UPDATED: Bottom Controls - Reordered: Progress, Menu, Mario -->
+    <div id="bottom-controls">
+        <div id="progress-control">
+            <span>Progress</span>
+        </div>
+        <div id="menu-control">
+            <span>Menu</span>
+        </div>
+        <div id="mario-control">
+            <span>Mario</span>
+        </div>
+    </div>
+    <!-- Audio -->
+    <audio id="unlock-audio" preload="auto">
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAA" type="audio/wav" />
+    </audio>
+    <audio id="ambient-audio" loop preload="auto" crossorigin="anonymous">
+        <source src="https://ice1.somafm.com/deepspaceone-128-mp3" type="audio/mpeg" />
+    </audio>
+    <!-- Progress Modal -->
+    <div id="progress-modal">
+        <div class="card">
+            <h2>Your Scripture Journey</h2>
+            <div id="stats"></div>
+            <div id="detail-view">
+                <div id="detail-title"></div>
+                <div id="detail-content"></div>
+                <button id="back-btn">Back</button>
+            </div>
+            <div class="modal-actions">
+                <button id="close-modal">Close</button>
+                <button id="export-progress">Export</button>
+                <button id="clear-progress">Clear All</button>
+            </div>
+        </div>
+    </div>
+    <!-- Memory Modal -->
+    <div id="memory-modal">
+        <div class="card">
+            <h2>Memory Bank</h2>
+            <div id="memory-content"></div>
+            <div class="modal-actions">
+                <button id="add-memory">Add</button>
+                <button id="close-memory">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Ref Selector Modal -->
+    <div id="ref-selector-modal">
+        <div class="card">
+            <h2 id="selector-title">Select Verse</h2>
+            <div id="selector-content"></div>
+            <button id="selector-back" style="display:none;">Back</button>
+            <div class="modal-actions">
+                <button id="close-selector">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Clear Modal -->
+    <div id="confirm-clear-modal">
+        <div class="card">
+            <h3>Warning: Permanent Deletion</h3>
+            <p>This will erase all saved progress data. This action cannot be undone.</p>
+            <p>To confirm, type the phrase in the box below:</p>
+            <div class="confirm-input-wrapper">
+                <div id="confirm-ghost"></div>
+                <input id="confirm-input" type="text" autocomplete="off" />
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-clear">Cancel</button>
+                <button id="confirm-clear" disabled>Clear</button>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Delete Profile Modal -->
+    <div id="confirm-delete-modal">
+        <div class="card">
+            <h3>Warning: Delete Profile</h3>
+            <p>This will erase the profile <span id="delete-profile-name"></span> and all its saved progress data. This action cannot be undone.</p>
+            <p>To confirm, type the phrase in the box below:</p>
+            <div class="confirm-input-wrapper">
+                <div id="delete-ghost"></div>
+                <input id="delete-input" type="text" autocomplete="off" />
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-delete">Cancel</button>
+                <button id="confirm-delete" disabled>Delete</button>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Delete Memory Item Modal -->
+    <div id="confirm-delete-memory-modal">
+        <div class="card">
+            <h3>Warning: Remove from Memory Bank</h3>
+            <p>This will remove <span id="delete-memory-name"></span> from your memory bank. This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="cancel-delete-memory">Cancel</button>
+                <button id="confirm-delete-memory">Remove</button>
+            </div>
+        </div>
+    </div>
+    <!-- Create Profile Modal -->
+    <div id="create-profile-modal">
+        <div class="card">
+            <h3>Create Profile</h3>
+            <p>Enter profile name:</p>
+            <input id="new-profile-input" type="text" autocomplete="off" />
+            <div class="modal-actions">
+                <button id="cancel-create">Cancel</button>
+                <button id="confirm-create" disabled>Create</button>
+            </div>
+        </div>
+    </div>
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal">
+        <div class="card">
+            <p id="custom-alert-message"></p>
+            <button id="custom-alert-ok">OK</button>
+        </div>
+    </div>
+    <script>
+        let currentProfile = localStorage.getItem('scripture-flow-current-profile') || '';
+        let STORAGE_KEY = currentProfile ? 'kjv-typing-progress-v6-' + currentProfile : 'kjv-typing-progress-v6';
+        let MEMORY_KEY = currentProfile ? 'scripture-flow-memory-bank-' + currentProfile : 'scripture-flow-memory-bank';
+        const $ = id => document.getElementById(id);
+        const mainMenu = $('main-menu');
+        const gameUI = $('game-ui');
+        // UPDATED: Mario UI Elements
+        const marioUI = $('mario-ui');
+        const marioIframe = $('mario-iframe');
+        const verseEl = $('verse');
+        const inputEl = $('hidden-input');
+        const refEl = $('ref');
+        const unlock = $('unlock-audio');
+        const ambient = $('ambient-audio');
+        const modal = $('progress-modal');
+        const statsEl = $('stats');
+        const detailView = $('detail-view');
+        const detailTitle = $('detail-title');
+        const detailContent = $('detail-content');
+        const backBtn = $('back-btn');
+        const mainCard = gameUI;
+        const confirmModal = $('confirm-clear-modal');
+        const confirmInput = $('confirm-input');
+        const confirmClear = $('confirm-clear');
+        const cancelClear = $('cancel-clear');
+        const confirmGhost = $('confirm-ghost');
+        const deleteModal = $('confirm-delete-modal');
+        const deleteInput = $('delete-input');
+        const deleteGhost = $('delete-ghost');
+        const deleteProfileName = $('delete-profile-name');
+        const confirmDelete = $('confirm-delete');
+        const cancelDelete = $('cancel-delete');
+        const memoryDeleteModal = $('confirm-delete-memory-modal');
+        const deleteMemoryName = $('delete-memory-name');
+        const confirmDeleteMemory = $('confirm-delete-memory');
+        const cancelDeleteMemory = $('cancel-delete-memory');
+        const createModal = $('create-profile-modal');
+        const newProfileInput = $('new-profile-input');
+        const confirmCreate = $('confirm-create');
+        const cancelCreate = $('cancel-create');
+        const memoryModal = $('memory-modal');
+        const memoryContent = $('memory-content');
+        const addMemory = $('add-memory');
+        const closeMemory = $('close-memory');
+        const refSelectorModal = $('ref-selector-modal');
+        const selectorTitle = $('selector-title');
+        const selectorContent = $('selector-content');
+        const selectorBack = $('selector-back');
+        const closeSelector = $('close-selector');
+        const customAlertModal = $('custom-alert-modal');
+        const customAlertMessage = $('custom-alert-message');
+        const customAlertOk = $('custom-alert-ok');
+        let currentVerse = '';
+        let currentRef = '';
+        let typedSoFar = '';
+        let lastErrorIndex = -1;
+        let errorCount = 0;
+        let currentMode = '';
+        let currentMemoryItem = null;
+        let isChapterMode = false;
+        let currentBook = '';
+        let currentChapter = 0;
+        let currentVerseNum = 1;
+        let totalVerses = 0;
+        let audioUnlocked = false;
+        let currentSelectorCallback = null;
+        let currentIsChoice = false;
+        let selectorCurrentView = 'books';
+        let selectorCurrentBook = null;
+        let selectorCurrentChapter = null;
+        const API = 'https://bible-api.com/';
+        let chapterDataCache = JSON.parse(localStorage.getItem('scripture-flow-chapter-cache')) || {};
+        let lastBookViewHTML = '';
+        // === STATIC DATA ===
+        const bookVerseCounts = {
+            "Genesis":1533,"Exodus":1213,"Leviticus":859,"Numbers":1288,"Deuteronomy":959,"Joshua":658,"Judges":618,"Ruth":85,
+            "1 Samuel":810,"2 Samuel":695,"1 Kings":816,"2 Kings":719,"1 Chronicles":942,"2 Chronicles":822,"Ezra":280,
+            "Nehemiah":406,"Esther":167,"Job":1070,"Psalms":2461,"Proverbs":915,"Ecclesiastes":222,"Song of Solomon":117,
+            "Isaiah":1292,"Jeremiah":1364,"Lamentations":154,"Ezekiel":1273,"Daniel":357,"Hosea":197,"Joel":73,"Amos":146,
+            "Obadiah":21,"Jonah":48,"Micah":105,"Nahum":47,"Habakkuk":56,"Zephaniah":53,"Haggai":38,"Zechariah":211,"Malachi":55,
+            "Matthew":1071,"Mark":678,"Luke":1151,"John":879,"Acts":1007,"Romans":433,"1 Corinthians":437,"2 Corinthians":257,
+            "Galatians":149,"Ephesians":155,"Philippians":104,"Colossians":95,"1 Thessalonians":89,"2 Thessalonians":47,
+            "1 Timothy":113,"2 Timothy":83,"Titus":46,"Philemon":25,"Hebrews":303,"James":108,"1 Peter":105,"2 Peter":61,
+            "1 John":105,"2 John":13,"3 John":14,"Jude":25,"Revelation":404
+        };
+        const bookChapterCounts = {
+            "Genesis":50,"Exodus":40,"Leviticus":27,"Numbers":36,"Deuteronomy":34,"Joshua":24,"Judges":21,"Ruth":4,
+            "1 Samuel":31,"2 Samuel":24,"1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,"Ezra":10,
+            "Nehemiah":13,"Esther":10,"Job":42,"Psalms":150,"Proverbs":31,"Ecclesiastes":12,"Song of Solomon":8,
+            "Isaiah":66,"Jeremiah":52,"Lamentations":5,"Ezekiel":48,"Daniel":12,"Hosea":14,"Joel":3,"Amos":9,
+            "Obadiah":1,"Jonah":4,"Micah":7,"Nahum":3,"Habakkuk":3,"Zephaniah":3,"Haggai":2,"Zechariah":14,"Malachi":4,
+            "Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,"Romans":16,"1 Corinthians":16,"2 Corinthians":13,
+            "Galatians":6,"Ephesians":6,"Philippians":4,"Colossians":4,"1 Thessalonians":5,"2 Thessalonians":3,
+            "1 Timothy":6,"2 Timothy":4,"Titus":3,"Philemon":1,"Hebrews":13,"James":5,"1 Peter":5,"2 Peter":3,
+            "1 John":5,"2 John":1,"3 John":1,"Jude":1,"Revelation":22
+        };
+        const bookOrder = Object.keys(bookVerseCounts);
+        function getBookFromRef(ref) {
+            for (let book of bookOrder) {
+                if (ref.startsWith(book + ' ')) {
+                    return book;
+                }
+            }
+            return null;
+        }
+        /* ================================================
+           STORAGE
+           ================================================ */
+        function getProgress() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            const defaults = {
+                completed: [],
+                first: null,
+                streak: 0,
+                lastDate: null,
+                totalWPM: 0,
+                verseCount: 0,
+                maxWPM: 0,
+                fastestRef: null,
+                fastestText: null,
+                totalAccuracy: 0,
+                recentWPMs: [],
+                recentAccuracies: []
+            };
+            const p = data ? { ...defaults, ...JSON.parse(data) } : defaults;
+            if (typeof p.first === 'number') {
+                p.first = new Date(p.first).toISOString().split('T')[0];
+                saveProgress(p);
+            }
+            return p;
+        }
+        function saveProgress(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+        function isCompleted(ref) {
+            return getProgress().completed.includes(ref);
+        }
+        function markCompleted(ref, wpm = null, accuracy = null) {
+            const p = getProgress();
+            if (!p.completed.includes(ref)) {
+                p.completed.push(ref);
+                const today = new Date().toISOString().split('T')[0];
+                if (!p.first) p.first = today;
+                if (p.lastDate !== today) {
+                    if (p.lastDate) {
+                        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                        p.streak = (p.lastDate === yesterday) ? p.streak + 1 : 1;
+                    } else {
+                        p.streak = 1;
+                    }
+                    p.lastDate = today;
+                }
+                if (wpm !== null && accuracy !== null) {
+                    p.totalWPM += wpm;
+                    p.verseCount += 1;
+                    p.totalAccuracy += accuracy;
+                    p.recentWPMs.push(wpm);
+                    if (p.recentWPMs.length > 10) p.recentWPMs.shift();
+                    p.recentAccuracies.push(accuracy);
+                    if (p.recentAccuracies.length > 10) p.recentAccuracies.shift();
+                    if (wpm > p.maxWPM) {
+                        p.maxWPM = wpm;
+                        p.fastestRef = ref;
+                        p.fastestText = currentVerse;
+                    }
+                }
+                saveProgress(p);
+            }
+        }
+        function getMemoryBank() {
+            return JSON.parse(localStorage.getItem(MEMORY_KEY)) || [];
+        }
+        function saveMemoryBank(bank) {
+            localStorage.setItem(MEMORY_KEY, JSON.stringify(bank));
+        }
+        /* ================================================
+           START MODES
+           ================================================ */
+        $('random-btn').onclick = () => {
+            currentMode = 'flow';
+            mainMenu.style.display = 'none';
+            gameUI.style.display = 'block';
+            marioUI.style.display = 'none'; // NEW: Hide Mario if visible
+            unlockAudio();
+            loadVerse();
+        };
+        $('memory-btn').onclick = () => {
+            currentMode = 'memory';
+            showMemoryModal();
+        };
+        $('choice-btn').onclick = () => {
+            currentMode = 'choice';
+            showRefSelector(true, (book, ch, vs) => {
+                mainMenu.style.display = 'none';
+                gameUI.style.display = 'block';
+                marioUI.style.display = 'none'; // NEW: Hide Mario if visible
+                unlockAudio();
+                if (vs === undefined) {
+                    isChapterMode = true;
+                    currentBook = book;
+                    currentChapter = ch;
+                    let fetchRef = book.replace(/\s/g, '') + (bookChapterCounts[book] === 1 ? '1:1-' + bookVerseCounts[book] : ch);
+                    apiFetch(fetchRef).then(data => {
+                        totalVerses = data.verses.length;
+                        loadVerse(`${book} ${ch}:1`);
+                    });
+                } else {
+                    isChapterMode = false;
+                    loadVerse(`${book} ${ch}:${vs}`);
+                }
+            });
+        };
+        // UPDATED: Mario Button Click Handler
+        $('mario-control').onclick = () => {
+    mainMenu.style.display = 'none';
+    gameUI.style.display = 'none';
+    marioUI.style.display = 'block';
+
+    // Mute ambient music
+    ambient.volume = 0;
+
+    // Focus iframe after delay
+    setTimeout(() => {
+        if (marioIframe) {
+            marioIframe.focus();
+        }
+    }, 100);
+};
+// Track if we're in Mario mode
+let isMarioActive = false;
+
+// When iframe gains focus → mute ambient
+marioIframe.addEventListener('load', () => {
+    marioIframe.contentWindow.addEventListener('focus', () => {
+        if (marioUI.style.display === 'block') {
+            ambient.volume = 0;
+            isMarioActive = true;
+        }
+    });
+});
+
+// When focus leaves iframe (e.g. Esc, click outside) → restore volume
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isMarioActive) {
+        e.preventDefault();
+
+        // Return to main menu
+        marioUI.style.display = 'none';
+        mainMenu.style.display = 'block';
+
+        // Restore ambient music
+        const targetVol = parseFloat($('volume-slider').value);
+        ambient.volume = targetVol;
+
+        isMarioActive = false;
+
+        // Refocus app if needed
+        inputEl.focus();
+    }
+});
+
+// Optional: Also handle blur from iframe
+marioIframe.addEventListener('blur', () => {
+    if (isMarioActive && marioUI.style.display === 'block') {
+        // User clicked outside or tabbed away — keep muted until Esc
+        // (or you can auto-resume here if preferred)
+    }
+});
+        $('progress-control').onclick = () => {
+            currentView = 'overview';
+            showOverview();
+            modal.style.display = 'flex';
+        };
+        $('menu-control').onclick = () => {
+    gameUI.style.display = 'none';
+    marioUI.style.display = 'none';
+    mainMenu.style.display = 'block';
+
+    inputEl.disabled = true;
+    currentMode = '';
+    isChapterMode = false;
+    currentMemoryItem = null;
+
+    // Restore ambient volume
+    const targetVol = parseFloat($('volume-slider').value);
+    ambient.volume = targetVol;
+    isMarioActive = false;
+};
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            ambient.volume = 0;
+            ambient.play().catch(() => {});
+            const fade = setInterval(() => {
+                if (ambient.volume < 0.15) {
+                    ambient.volume = Math.min(0.15, ambient.volume + 0.01);
+                } else {
+                    clearInterval(fade);
+                }
+            }, 40);
+        }
+        $('volume-slider').addEventListener('input', e => {
+            const vol = parseFloat(e.target.value);
+            ambient.volume = vol;
+            $('volume-value').textContent = `${Math.round(vol * 100)}%`;
+        });
+        /* ================================================
+           VERSE FETCHING
+           ================================================ */
+        async function loadVerse(ref = null, text = null) {
+            verseEl.className = 'loading';
+            verseEl.textContent = 'Fetching a new verse…';
+            refEl.textContent = '';
+            typedSoFar = '';
+            lastErrorIndex = -1;
+            errorCount = 0;
+            inputEl.value = '';
+            inputEl.disabled = true;
+            startTime = 0;
+            try {
+                let verseText, reference;
+                if (text) {
+                    verseText = text;
+                    reference = ref;
+                } else if (ref) {
+                    ({ verseText, reference } = await fetchVerse(ref));
+                } else {
+                    ({ verseText, reference } = await fetchUnseenVerse());
+                }
+                currentVerse = verseText;
+                currentRef = reference;
+                let hiddenWords = new Set();
+                if (currentMode === 'memory' && currentMemoryItem) {
+                    hiddenWords = new Set(currentMemoryItem.hidden);
+                }
+                renderVerse(verseText, hiddenWords);
+                refEl.textContent = reference;
+                inputEl.disabled = false;
+                inputEl.focus();
+            } catch {
+                fallbackVerse();
+            }
+        }
+        async function fetchUnseenVerse() {
+            const maxTries = 50;
+            const completed = getProgress().completed;
+            for (let i = 0; i < maxTries; i++) {
+                const book = bookOrder[Math.floor(Math.random() * bookOrder.length)];
+                const chapter = randomInt(1, bookChapterCounts[book]);
+                let fetchRef = book.replace(/\s/g, '') + (bookChapterCounts[book] === 1 ? '1:1-' + bookVerseCounts[book] : chapter);
+                const data = await apiFetch(fetchRef);
+                if (!data?.verses?.length) continue;
+                const unseen = data.verses
+                    .map((v, idx) => ({ text: v.text, num: idx + 1 }))
+                    .filter(v => !completed.includes(`${book} ${chapter}:${v.num}`));
+                if (!unseen.length) continue;
+                const { text, num } = unseen[randomInt(0, unseen.length - 1)];
+                let clean = text.replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim();
+                clean = clean.replace(/‘/g, "'").replace(/’/g, "'").replace(/“/g, '"').replace(/”/g, '"');
+                return { verseText: clean, reference: `${book} ${chapter}:${num}` };
+            }
+            throw new Error("No unseen verse");
+        }
+        async function fetchVerse(ref) {
+            const normalized = ref.replace(/\s/g, '');
+            const data = await apiFetch(normalized);
+            if (!data) throw new Error("API error");
+            let clean = data.text.replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim();
+            clean = clean.replace(/‘/g, "'").replace(/’/g, "'").replace(/“/g, '"').replace(/”/g, '"');
+            return { verseText: clean, reference: data.reference };
+        }
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        async function apiFetch(ref) {
+            const res = await fetch(`${API}${encodeURIComponent(ref)}?translation=kjv`);
+            if (!res.ok) throw new Error("API error");
+            return await res.json();
+        }
+        function fallbackVerse() {
+            const fallback = { text: "For God so loved the world, that he gave his only begotten Son", ref: "John 3:16" };
+            currentVerse = fallback.text;
+            currentRef = fallback.ref;
+            renderVerse(currentVerse);
+            refEl.textContent = currentRef;
+            inputEl.disabled = false;
+            inputEl.focus();
+        }
+        function renderVerse(text, hiddenWords = new Set()) {
+            verseEl.innerHTML = '';
+            verseEl.className = '';
+            const words = text.split(' ');
+            let charIndex = 0;
+            words.forEach((word, wordIndex) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'word';
+                const isHidden = hiddenWords.has(wordIndex);
+                word.split('').forEach(ch => {
+                    const s = document.createElement('span');
+                    s.className = 'letter';
+                    s.id = `c${charIndex}`;
+                    s.textContent = isHidden ? '' : ch;
+                    if (isHidden) s.classList.add('invisible');
+                    wordSpan.appendChild(s);
+                    charIndex++;
+                });
+                verseEl.appendChild(wordSpan);
+                if (wordIndex < words.length - 1) {
+                    const space = document.createElement('span');
+                    space.className = 'letter space';
+                    space.id = `c${charIndex}`;
+                    space.textContent = '\u00A0';
+                    verseEl.appendChild(space);
+                    charIndex++;
+                }
+            });
+        }
+        /* ================================================
+           TYPING
+           ================================================ */
+        inputEl.addEventListener('keydown', e => {
+            if (e.key === 'Backspace') {
+                if (lastErrorIndex >= 0 && typedSoFar.length === lastErrorIndex) {
+                    lastErrorIndex = -1;
+                    updateLetterClasses();
+                }
+                e.preventDefault();
+                return;
+            }
+            if (e.key.length === 1) {
+                if (startTime === 0) {
+                    startTime = performance.now();
+                }
+                const nextIndex = typedSoFar.length;
+                if (nextIndex >= currentVerse.length) { e.preventDefault(); return; }
+                if (lastErrorIndex >= 0 && nextIndex !== lastErrorIndex) { e.preventDefault(); return; }
+                if (e.key !== currentVerse[nextIndex]) {
+                    lastErrorIndex = nextIndex;
+                    errorCount++;
+                    updateLetterClasses();
+                    const el = $(`c${nextIndex}`);
+                    if (el) {
+                        el.style.animation = 'none';
+                        setTimeout(() => { el.style.animation = ''; }, 10);
+                    }
+                    e.preventDefault();
+                }
+            }
+        });
+        inputEl.addEventListener('input', () => {
+            const value = inputEl.value;
+            let mismatch = -1;
+            for (let i = 0; i < value.length; i++) {
+                if (value[i] !== currentVerse[i]) { mismatch = i; break; }
+            }
+            if (mismatch === -1 && value.length <= currentVerse.length) {
+                typedSoFar = value;
+                lastErrorIndex = -1;
+            } else {
+                typedSoFar = value.substring(0, mismatch);
+                lastErrorIndex = mismatch;
+                inputEl.value = typedSoFar;
+            }
+            updateLetterClasses();
+            if (typedSoFar === currentVerse) {
+                const endTime = performance.now();
+                const timeSec = (endTime - startTime) / 1000 || 0.001;
+                const words = currentVerse.split(' ').length;
+                const wpm = Math.round((words / timeSec) * 60);
+                const accuracy = (currentVerse.length / (currentVerse.length + errorCount)) * 100;
+                completeVerse(wpm, accuracy);
+            }
+        });
+        function updateLetterClasses() {
+            for (let i = 0; i < currentVerse.length; i++) {
+                const el = $(`c${i}`);
+                if (!el) continue;
+                const isInvisible = el.classList.contains('invisible');
+                if (i < typedSoFar.length) {
+                    el.className = 'letter correct';
+                    el.textContent = currentVerse[i];
+                } else if (i === lastErrorIndex) {
+                    el.className = 'letter error';
+                    el.textContent = currentVerse[i];
+                } else {
+                    el.className = el.classList.contains('space') ? 'letter space' : 'letter';
+                    if (isInvisible) {
+                        el.textContent = '';
+                        if (!el.classList.contains('invisible')) el.classList.add('invisible');
+                    } else {
+                        el.textContent = currentVerse[i];
+                    }
+                }
+            }
+        }
+        /* ================================================
+           FOCUS
+           ================================================ */
+        document.addEventListener('click', (e) => {
+            if (gameUI.style.display === 'block' && !modal.contains(e.target) && !confirmModal.contains(e.target) && !deleteModal.contains(e.target) && !createModal.contains(e.target) && !memoryModal.contains(e.target) && !refSelectorModal.contains(e.target) && !memoryDeleteModal.contains(e.target) && !customAlertModal.contains(e.target)) {
+                inputEl.focus();
+            }
+        });
+        /* ================================================
+           COMPLETION
+           ================================================ */
+        function completeVerse(wpm, accuracy) {
+            inputEl.disabled = true;
+            const updateMetrics = currentMode !== 'memory';
+            markCompleted(currentRef, updateMetrics ? wpm : null, updateMetrics ? accuracy : null);
+            unlock.currentTime = 0;
+            unlock.play().catch(() => {});
+            mainCard.classList.add('completion-glow');
+            setTimeout(() => mainCard.classList.remove('completion-glow'), 2000);
+            if (currentMode === 'memory') {
+                const bank = getMemoryBank();
+                const itemIndex = bank.findIndex(b => b.ref === currentRef);
+                if (itemIndex !== -1) {
+                    const item = bank[itemIndex];
+                    const wordCount = currentVerse.split(' ').length;
+                    if (item.hidden.length < wordCount) {
+                        if (errorCount === 0) {
+                            let newHidden;
+                            do {
+                                newHidden = Math.floor(Math.random() * wordCount);
+                            } while (item.hidden.includes(newHidden));
+                            item.hidden.push(newHidden);
+                            currentMemoryItem.hidden = item.hidden;
+                            bank[itemIndex] = item;
+                            saveMemoryBank(bank);
+                            setTimeout(() => loadVerse(currentRef, currentVerse), 1800);
+                        } else {
+                            setTimeout(() => loadVerse(currentRef, currentVerse), 1800);
+                        }
+                    } else {
+                        showCustomAlert('You have mastered this verse!');
+                        setTimeout(showMemoryModal, 1800);
+                    }
+                }
+            } else if (currentMode === 'choice') {
+                if (isChapterMode) {
+                    currentVerseNum++;
+                    if (currentVerseNum <= totalVerses) {
+                        setTimeout(() => loadVerse(`${currentBook} ${currentChapter}:${currentVerseNum}`), 1800);
+                    } else {
+                        showCustomAlert('Chapter completed!');
+                        isChapterMode = false;
+                        setTimeout(() => {
+                            gameUI.style.display = 'none';
+                            mainMenu.style.display = 'block';
+                        }, 1800);
+                    }
+                } else {
+                    setTimeout(() => {
+                        gameUI.style.display = 'none';
+                        mainMenu.style.display = 'block';
+                    }, 1800);
+                }
+            } else {
+                setTimeout(() => loadVerse(), 1800);
+            }
+        }
+        /* ================================================
+           PROGRESS MODAL
+           ================================================ */
+        let currentView = 'overview';
+        let progressCurrentBook = null;
+        $('close-modal').onclick = () => {
+            modal.style.display = 'none';
+            if (gameUI.style.display === 'block') inputEl.focus();
+        };
+        backBtn.onclick = () => {
+            if (currentView === 'chapter-text') {
+                showBookView(progressCurrentBook);
+            } else if (currentView === 'chapter') {
+                showBibleMap();
+            } else {
+                showOverview();
+            }
+        };
+        function showOverview() {
+            currentView = 'overview';
+            statsEl.style.display = 'grid';
+            detailView.style.display = 'none';
+            renderOverview();
+        }
+        function renderOverview() {
+            const p = getProgress();
+            const journeyDays = p.first ? Math.floor((Date.now() - new Date(p.first)) / 86400000) + 1 : 0;
+            const avgWPM = p.verseCount > 0 ? Math.round(p.totalWPM / p.verseCount) : 0;
+            const stats = [
+                { label: 'Verses', value: p.completed.length, id: 'verses' },
+                { label: 'Days', value: journeyDays, id: 'days' },
+                { label: 'Typing', value: p.maxWPM || 0, id: 'typing' }
+            ];
+            statsEl.innerHTML = '';
+            stats.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'stat';
+                div.innerHTML = `<strong>${s.value}</strong><small>${s.label}</small>`;
+                div.onclick = async () => {
+                    statsEl.style.display = 'none';
+                    detailView.style.display = 'flex';
+                    detailTitle.textContent = s.label;
+                    if (s.id === 'verses') {
+                        currentView = 'book';
+                        showBibleMap();
+                    } else {
+                        currentView = 'other';
+                        if (s.id === 'days') {
+                            renderDaysDetail();
+                        } else if (s.id === 'typing') {
+                            await renderTypingDetail(avgWPM);
+                        }
+                    }
+                };
+                statsEl.appendChild(div);
+            });
+        }
+        function showBibleMap() {
+            currentView = 'book';
+            detailTitle.textContent = 'Bible Books';
+            renderBibleMap();
+        }
+        function renderBibleMap() {
+            const p = getProgress();
+            const bookStats = {};
+            p.completed.forEach(ref => {
+                const book = getBookFromRef(ref);
+                if (book) {
+                    bookStats[book] = (bookStats[book] || 0) + 1;
+                }
+            });
+            detailContent.innerHTML = '<div class="books-grid"></div>';
+            const grid = detailContent.querySelector('.books-grid');
+            bookOrder.forEach(book => {
+                const total = bookVerseCounts[book] || 1;
+                const done = bookStats[book] || 0;
+                const percent = done / total;
+                const bubble = document.createElement('div');
+                bubble.className = 'book-bubble';
+                if (percent >= 1) bubble.classList.add('complete');
+                else if (percent > 0) bubble.classList.add('partial');
+                const nameLines = book.split(' ');
+                const nameHTML = nameLines.map(line => `<div>${line}</div>`).join('');
+                bubble.innerHTML = `
+                    <div class="book-name">${nameHTML}</div>
+                    <div class="book-count">${done}/${total}</div>
+                `;
+                bubble.onclick = () => showBookView(book);
+                grid.appendChild(bubble);
+            });
+        }
+        function showBookView(book) {
+            currentView = 'chapter';
+            progressCurrentBook = book;
+            detailTitle.textContent = book;
+            const p = getProgress();
+            const chapters = bookChapterCounts[book];
+            const chapterStats = {};
+            p.completed.forEach(ref => {
+                const thisBook = getBookFromRef(ref);
+                if (thisBook === book) {
+                    const chStr = ref.substring(thisBook.length + 1).split(':')[0];
+                    const ch = parseInt(chStr);
+                    chapterStats[ch] = (chapterStats[ch] || 0) + 1;
+                }
+            });
+            const gridHTML = Array.from({ length: chapters }, (_, i) => {
+                const ch = i + 1;
+                const done = chapterStats[ch] || 0;
+                const cacheKey = `${book} ${ch}`;
+                const cached = chapterDataCache[cacheKey];
+                const total = cached ? cached.total : 0;
+                const showTotal = total > 0 ? total : '?';
+                let classes = 'chapter-bubble';
+                const percent = total > 0 ? done / total : (done > 0 ? 0.1 : 0);
+                if (percent >= 1) classes += ' complete';
+                else if (percent > 0) classes += ' partial';
+                return `
+                    <div class="${classes}" data-chapter="${ch}">
+                        <div class="chapter-num">${ch}</div>
+                        <div class="chapter-count">${done}/${showTotal}</div>
+                    </div>
+                `;
+            }).join('');
+            lastBookViewHTML = `<div class="chapters-grid">${gridHTML}</div>`;
+            detailContent.innerHTML = lastBookViewHTML;
+            detailContent.querySelectorAll('.chapter-bubble').forEach(bubble => {
+                bubble.onclick = (e) => {
+                    e.stopPropagation();
+                    const ch = parseInt(bubble.dataset.chapter);
+                    showChapterText(book, ch);
+                };
+            });
+        }
+        async function showChapterText(book, chapter) {
+            currentView = 'chapter-text';
+            const cacheKey = `${book} ${chapter}`;
+            let data = chapterDataCache[cacheKey];
+            if (!data) {
+                detailContent.innerHTML = '<div class="loading">Loading chapter...</div>';
+                try {
+                    let fetchRef = book.replace(/\s/g, '') + (bookChapterCounts[book] === 1 ? '1:1-' + bookVerseCounts[book] : chapter);
+                    data = await apiFetch(fetchRef);
+                    chapterDataCache[cacheKey] = { total: data.verses.length, verses: data.verses };
+                    localStorage.setItem('scripture-flow-chapter-cache', JSON.stringify(chapterDataCache));
+                } catch (e) {
+                    detailContent.innerHTML = `<p style="text-align:center; color:var(--text-muted);">Failed to load chapter.</p>`;
+                    return;
+                }
+            }
+            detailTitle.textContent = `${book} ${chapter}`;
+            renderChapterText(detailContent, book, chapter, false);
+            const bubbleHTML = lastBookViewHTML.match(
+                new RegExp(`<div class="chapter-bubble[^"]*" data-chapter="${chapter}"[^>]*>(.*?)</div>`, 's')
+            )?.[0] || '';
+            if (bubbleHTML) {
+                const done = getProgress().completed.filter(r => r.startsWith(`${book} ${chapter}:`)).length;
+                const total = data.verses.length;
+                const updated = bubbleHTML.replace(/\d+\/\?/, `${done}/${total}`);
+                lastBookViewHTML = lastBookViewHTML.replace(bubbleHTML, updated);
+            }
+        }
+        function renderDaysDetail() {
+            const p = getProgress();
+            const journeyDays = p.first ? Math.floor((Date.now() - new Date(p.first)) / 86400000) + 1 : 0;
+            detailContent.innerHTML = `
+                <div class="stat-detail">
+                    <strong>Journey Length:</strong> ${journeyDays} day${journeyDays !== 1 ? 's' : ''}
+
+                    <p>Total days since your first verse completion.</p>
+                    <strong>Current Streak:</strong> ${p.streak} day${p.streak !== 1 ? 's' : ''}
+
+                    <p>Consecutive days with at least one verse completed.</p>
+                </div>
+            `;
+        }
+        async function renderTypingDetail(overallAvgWPM) {
+            const p = getProgress();
+            let fastestText = p.fastestText || '';
+            if (!fastestText && p.fastestRef && p.fastestRef !== '—') {
+                try {
+                    const data = await apiFetch(p.fastestRef.replace(/\s/g, ''));
+                    fastestText = data.text.replace(/^\d+\s*/, '').trim();
+                    p.fastestText = fastestText;
+                    saveProgress(p);
+                } catch (e) {
+                    fastestText = '';
+                }
+            }
+            const overallAvgAccuracy = p.verseCount > 0 ? Math.round(p.totalAccuracy / p.verseCount) : 0;
+            const recentCount = p.recentWPMs.length;
+            const currentAvgWPM = recentCount > 0 ? Math.round(p.recentWPMs.reduce((a, b) => a + b, 0) / recentCount) : 0;
+            const currentAvgAccuracy = recentCount > 0 ? Math.round(p.recentAccuracies.reduce((a, b) => a + b, 0) / recentCount) : 0;
+            const fastestRef = p.fastestRef || '—';
+            detailContent.innerHTML = `
+                <div class="stat-detail">
+                    <strong>Overall Average WPM:</strong> ${overallAvgWPM}
+
+                    <p>The average words per minute across all completed verses, calculated as the total sum of individual verse WPMs divided by the number of verses. Each verse WPM = (number of words / typing time in minutes).</p>
+                    <strong>Current Average WPM:</strong> ${currentAvgWPM}
+
+                    <p>Average WPM of the last ${recentCount} verse${recentCount !== 1 ? 's' : ''}.</p>
+                    <strong>Max WPM:</strong> ${p.maxWPM || 0}
+
+                    <p>Your highest speed on a single verse.</p>
+                    <strong>Fastest Verse: </strong><span style="color: var(--text);">${fastestRef}</span>
+
+                    <p style="margin-top:0.5rem; font-style:italic;">${fastestText}</p>
+                    <strong>Overall Average Accuracy:</strong> ${overallAvgAccuracy}%
+
+                    <p>The average accuracy across all completed verses, where per-verse accuracy = (verse characters / (characters + error attempts)) × 100.</p>
+                    <strong>Current Average Accuracy:</strong> ${currentAvgAccuracy}%
+
+                    <p>Average accuracy of the last ${recentCount} verse${recentCount !== 1 ? 's' : ''}.</p>
+                </div>
+            `;
+        }
+        /* ================================================
+           MEMORY MODAL
+           ================================================ */
+        function showMemoryModal() {
+            memoryModal.style.display = 'flex';
+            renderMemoryList();
+        }
+        function renderMemoryList() {
+            const bank = getMemoryBank();
+            if (bank.length === 0) {
+                memoryContent.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Add verses to your memory bank.</p>';
+                return;
+            }
+            memoryContent.innerHTML = '';
+            bank.forEach(item => {
+                const wordCount = item.text.split(' ').length;
+                const done = item.hidden.length;
+                const div = document.createElement('div');
+                div.className = 'memory-bubble';
+                const percent = done / wordCount;
+                if (percent >= 1) div.classList.add('complete');
+                else if (percent > 0) div.classList.add('partial');
+                div.innerHTML = `<div class="memory-ref">${item.ref}</div><div class="memory-count">${done}/${wordCount}</div>`;
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.textContent = 'X';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    showConfirmDeleteMemory(item.ref);
+                };
+                div.appendChild(delBtn);
+                div.onclick = () => {
+                    currentMemoryItem = item;
+                    memoryModal.style.display = 'none';
+                    mainMenu.style.display = 'none';
+                    gameUI.style.display = 'block';
+                    marioUI.style.display = 'none'; // NEW: Hide Mario if visible
+                    unlockAudio();
+                    loadVerse(item.ref, item.text);
+                };
+                memoryContent.appendChild(div);
+            });
+        }
+        addMemory.onclick = () => {
+            showRefSelector(false, () => {
+                renderMemoryList();
+            });
+        };
+        closeMemory.onclick = () => {
+            memoryModal.style.display = 'none';
+        };
+        function showConfirmDeleteMemory(ref) {
+            deleteMemoryName.textContent = ref;
+            memoryDeleteModal.style.display = 'flex';
+        }
+        confirmDeleteMemory.onclick = () => {
+            const ref = deleteMemoryName.textContent;
+            let bank = getMemoryBank();
+            bank = bank.filter(i => i.ref !== ref);
+            saveMemoryBank(bank);
+            memoryDeleteModal.style.display = 'none';
+            renderMemoryList();
+        };
+        cancelDeleteMemory.onclick = () => {
+            memoryDeleteModal.style.display = 'none';
+        };
+        /* ================================================
+           REF SELECTOR
+           ================================================ */
+        function showRefSelector(isForChoice, callback) {
+            currentIsChoice = isForChoice;
+            currentSelectorCallback = callback;
+            selectorCurrentView = 'books';
+            selectorCurrentBook = null;
+            selectorCurrentChapter = null;
+            selectorTitle.textContent = isForChoice ? 'Select Verse or Chapter' : 'Select Verse to Memorize';
+            selectorBack.style.display = 'none';
+            refSelectorModal.style.display = 'flex';
+            showBooksSelector();
+        }
+        closeSelector.onclick = () => {
+            refSelectorModal.style.display = 'none';
+        };
+        selectorBack.onclick = () => {
+            if (selectorCurrentView === 'chapter-text') {
+                showChaptersSelector(selectorCurrentBook);
+            } else if (selectorCurrentView === 'chapters') {
+                showBooksSelector();
+            }
+        };
+        function showBooksSelector() {
+            selectorCurrentView = 'books';
+            selectorBack.style.display = 'none';
+            selectorContent.innerHTML = '<div class="books-grid"></div>';
+            const grid = selectorContent.querySelector('.books-grid');
+            const p = getProgress();
+            const bookStats = {};
+            p.completed.forEach(ref => {
+                const book = getBookFromRef(ref);
+                if (book) {
+                    bookStats[book] = (bookStats[book] || 0) + 1;
+                }
+            });
+            bookOrder.forEach(book => {
+                const total = bookVerseCounts[book] || 1;
+                const done = bookStats[book] || 0;
+                const percent = done / total;
+                const bubble = document.createElement('div');
+                bubble.className = 'book-bubble';
+                if (percent >= 1) bubble.classList.add('complete');
+                else if (percent > 0) bubble.classList.add('partial');
+                const nameLines = book.split(' ');
+                const nameHTML = nameLines.map(line => `<div>${line}</div>`).join('');
+                bubble.innerHTML = `
+                    <div class="book-name">${nameHTML}</div>
+                    <div class="book-count">${done}/${total}</div>
+                `;
+                bubble.onclick = () => showChaptersSelector(book);
+                grid.appendChild(bubble);
+            });
+        }
+        function showChaptersSelector(book) {
+            selectorCurrentView = 'chapters';
+            selectorCurrentBook = book;
+            selectorTitle.textContent = book;
+            selectorBack.style.display = 'block';
+            const chapters = bookChapterCounts[book];
+            const p = getProgress();
+            const chapterStats = {};
+            p.completed.forEach(ref => {
+                const thisBook = getBookFromRef(ref);
+                if (thisBook === book) {
+                    const chStr = ref.substring(thisBook.length + 1).split(':')[0];
+                    const ch = parseInt(chStr);
+                    chapterStats[ch] = (chapterStats[ch] || 0) + 1;
+                }
+            });
+            const gridHTML = Array.from({ length: chapters }, (_, i) => {
+                const ch = i + 1;
+                const done = chapterStats[ch] || 0;
+                const cacheKey = `${book} ${ch}`;
+                const cached = chapterDataCache[cacheKey];
+                const total = cached ? cached.total : 0;
+                const showTotal = total > 0 ? total : '?';
+                let classes = 'chapter-bubble';
+                const percent = total > 0 ? done / total : (done > 0 ? 0.1 : 0);
+                if (percent >= 1) classes += ' complete';
+                else if (percent > 0) classes += ' partial';
+                return `
+                    <div class="${classes}" data-chapter="${ch}">
+                        <div class="chapter-num">${ch}</div>
+                        <div class="chapter-count">${done}/${showTotal}</div>
+                    </div>
+                `;
+            }).join('');
+            selectorContent.innerHTML = `<div class="chapters-grid">${gridHTML}</div>`;
+            selectorContent.querySelectorAll('.chapter-bubble').forEach(bubble => {
+                bubble.onclick = () => {
+                    const ch = parseInt(bubble.dataset.chapter);
+                    selectorCurrentChapter = ch;
+                    showChapterSelector(book, ch);
+                };
+            });
+        }
+        async function showChapterSelector(book, chapter) {
+            selectorCurrentView = 'chapter-text';
+            selectorTitle.textContent = `${book} ${chapter}`;
+            const cacheKey = `${book} ${chapter}`;
+            let data = chapterDataCache[cacheKey];
+            if (!data) {
+                selectorContent.innerHTML = '<div class="loading">Loading verses...</div>';
+                try {
+                    let fetchRef = book.replace(/\s/g, '') + (bookChapterCounts[book] === 1 ? '1:1-' + bookVerseCounts[book] : chapter);
+                    data = await apiFetch(fetchRef);
+                    chapterDataCache[cacheKey] = { total: data.verses.length, verses: data.verses };
+                    localStorage.setItem('scripture-flow-chapter-cache', JSON.stringify(chapterDataCache));
+                } catch (e) {
+                    selectorContent.innerHTML = `<p style="text-align:center; color:var(--text-muted);">Failed to load chapter.</p>`;
+                    return;
+                }
+            }
+            renderChapterText(selectorContent, book, chapter, true);
+        }
+        function renderChapterText(container, book, chapter, isSelector) {
+            const cacheKey = `${book} ${chapter}`;
+            const data = chapterDataCache[cacheKey];
+            const p = getProgress();
+            const completedSet = new Set(p.completed);
+            const versesHTML = data.verses.map(v => {
+                const verseNum = v.verse;
+                const ref = `${book} ${chapter}:${verseNum}`;
+                const isCompleted = completedSet.has(ref);
+                const cleanText = v.text.replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim().replace(/‘/g, "'").replace(/’/g, "'").replace(/“/g, '"').replace(/”/g, '"');
+                return `
+                    <div class="verse ${isCompleted ? 'completed' : ''}">
+                        <button class="verse-btn add-btn" data-ref="${ref}" data-text="${encodeURIComponent(cleanText)}">
+                            <i data-lucide="brain"></i>
+                        </button>
+                        <span class="verse-number">${verseNum}</span>
+                        <span class="verse-text">${cleanText}</span>
+                        <button class="verse-btn type-btn" data-ref="${ref}">
+                            <i data-lucide="keyboard"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            let html = `<div class="chapter-text">${versesHTML}</div>`;
+            const showChapterButton = true;
+            if (showChapterButton) {
+                html = `<div id="chapter-options"><button id="type-chapter">Type Entire Chapter</button></div>` + html;
+            }
+            container.innerHTML = html;
+            lucide.createIcons();
+            container.querySelectorAll('.add-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const ref = btn.dataset.ref;
+                    const text = decodeURIComponent(btn.dataset.text);
+                    const bank = getMemoryBank();
+                    if (bank.some(i => i.ref === ref)) {
+                        showCustomAlert('Already in Memory Bank');
+                        return;
+                    }
+                    bank.push({ref, text, hidden: []});
+                    saveMemoryBank(bank);
+                    renderMemoryList();
+                    showCustomAlert('Added to Memory Bank');
+                    if (isSelector && !currentIsChoice) {
+                        refSelectorModal.style.display = 'none';
+                        const [b, rest] = ref.split(' ');
+                        const [c, v] = rest.split(':');
+                        currentSelectorCallback(b, parseInt(c), parseInt(v));
+                    }
+                };
+            });
+            container.querySelectorAll('.type-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const ref = btn.dataset.ref;
+                    const [b, rest] = ref.split(' ');
+                    const [c, v] = rest.split(':');
+                    const ch = parseInt(c);
+                    const vs = parseInt(v);
+                    if (isSelector) {
+                        if (currentIsChoice) {
+                            refSelectorModal.style.display = 'none';
+                            currentSelectorCallback(b, ch, vs);
+                        } else {
+                            const text = decodeURIComponent(btn.closest('.verse').querySelector('.add-btn').dataset.text);
+                            let bank = getMemoryBank();
+                            if (!bank.some(i => i.ref === ref)) {
+                                bank.push({ref, text, hidden: []});
+                                saveMemoryBank(bank);
+                            }
+                            refSelectorModal.style.display = 'none';
+                            memoryModal.style.display = 'none';
+                            currentMemoryItem = bank.find(i => i.ref === ref);
+                            mainMenu.style.display = 'none';
+                            gameUI.style.display = 'block';
+                            marioUI.style.display = 'none'; // NEW: Hide Mario if visible
+                            currentMode = 'memory';
+                            unlockAudio();
+                            loadVerse(ref, text);
+                        }
+                    } else {
+                        modal.style.display = 'none';
+                        mainMenu.style.display = 'none';
+                        gameUI.style.display = 'block';
+                        marioUI.style.display = 'none'; // NEW: Hide Mario if visible
+                        currentMode = 'choice';
+                        isChapterMode = false;
+                        unlockAudio();
+                        loadVerse(ref);
+                    }
+                };
+            });
+            if (showChapterButton) {
+                const typeChapterBtn = $('type-chapter');
+                typeChapterBtn.onclick = () => {
+                    if (isSelector) {
+                        refSelectorModal.style.display = 'none';
+                        currentSelectorCallback(book, chapter);
+                    } else {
+                        modal.style.display = 'none';
+                        mainMenu.style.display = 'none';
+                        gameUI.style.display = 'block';
+                        marioUI.style.display = 'none'; // NEW: Hide Mario if visible
+                        currentMode = 'choice';
+                        isChapterMode = true;
+                        currentBook = book;
+                        currentChapter = chapter;
+                        totalVerses = data.total;
+                        unlockAudio();
+                        loadVerse(`${book} ${chapter}:1`);
+                    }
+                };
+            }
+        }
+        /* ================================================
+           EXPORT / CLEAR
+           ================================================ */
+        $('export-progress').onclick = () => {
+            const p = getProgress();
+            const blob = new Blob([JSON.stringify(p, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scripture-flow-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+        $('clear-progress').onclick = () => {
+            modal.style.display = 'none';
+            confirmModal.style.display = 'flex';
+            confirmInput.value = '';
+            confirmClear.disabled = true;
+            confirmClear.classList.remove('enabled');
+            renderConfirmPhrase();
+            setTimeout(() => confirmInput.focus(), 0);
+        };
+        cancelClear.onclick = () => {
+            confirmModal.style.display = 'none';
+            modal.style.display = 'flex';
+        };
+        confirmInput.addEventListener('input', () => {
+            const value = confirmInput.value.toLowerCase();
+            const phrase = 'yes, i am sure.'.toLowerCase();
+            const spans = confirmGhost.querySelectorAll('span');
+            for (let i = 0; i < phrase.length; i++) {
+                if (i < value.length && value[i] === phrase[i]) {
+                    spans[i].classList.add('correct');
+                } else {
+                    spans[i].classList.remove('correct');
+                }
+            }
+            if (value === phrase) {
+                confirmClear.disabled = false;
+                confirmClear.classList.add('enabled');
+            } else {
+                confirmClear.disabled = true;
+                confirmClear.classList.remove('enabled');
+            }
+        });
+        confirmClear.onclick = () => {
+            if (!confirmClear.disabled) {
+                localStorage.removeItem(STORAGE_KEY);
+                confirmModal.style.display = 'none';
+                showOverview();
+            }
+        };
+        function renderConfirmPhrase() {
+            const phrase = 'Yes, I am sure.';
+            confirmGhost.innerHTML = phrase.split('').map(char => `<span class="phrase-span">${char === ' ' ? '\u00A0' : char}</span>`).join('');
+        }
+        // Particle effects
+        const canvas = $('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                vx: Math.random() * 0.5 - 0.25,
+                vy: Math.random() * 0.5 - 0.25
+            });
+        }
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fill();
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+                if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+            });
+        }
+        animateParticles();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        // Profiles
+        function initProfiles() {
+            let profiles = JSON.parse(localStorage.getItem('scripture-flow-profiles')) || [];
+            currentProfile = localStorage.getItem('scripture-flow-current-profile');
+            if (!profiles.length) {
+                currentProfile = '';
+            } else if (!currentProfile || !profiles.includes(currentProfile)) {
+                currentProfile = profiles[0];
+                localStorage.setItem('scripture-flow-current-profile', currentProfile);
+            }
+            STORAGE_KEY = currentProfile ? 'kjv-typing-progress-v6-' + currentProfile : 'kjv-typing-progress-v6';
+            MEMORY_KEY = currentProfile ? 'scripture-flow-memory-bank-' + currentProfile : 'scripture-flow-memory-bank';
+            const profileControl = document.createElement('div');
+            profileControl.id = 'profile-control';
+            document.body.appendChild(profileControl);
+            const profileName = document.createElement('span');
+            profileName.id = 'profile-name';
+            profileControl.appendChild(profileName);
+            if (!profiles.length) {
+                profileName.textContent = '+';
+                profileControl.onclick = createNewProfile;
+            } else {
+                profileName.textContent = currentProfile;
+                profileControl.onclick = () => showProfileList(profiles, currentProfile);
+            }
+            profileControl.addEventListener('mouseover', () => profileControl.style.opacity = '1');
+            profileControl.addEventListener('mouseout', () => profileControl.style.opacity = '0.5');
+            const progressControl = $('progress-control');
+            progressControl.addEventListener('mouseover', () => progressControl.style.opacity = '1');
+            progressControl.addEventListener('mouseout', () => progressControl.style.opacity = '0.5');
+            const menuControl = $('menu-control');
+            menuControl.addEventListener('mouseover', () => menuControl.style.opacity = '1');
+            menuControl.addEventListener('mouseout', () => menuControl.style.opacity = '0.5');
+            const marioControl = $('mario-control'); // NEW: Add hover for Mario
+            marioControl.addEventListener('mouseover', () => marioControl.style.opacity = '1');
+            marioControl.addEventListener('mouseout', () => marioControl.style.opacity = '0.5');
+        }
+        function createNewProfile() {
+            createModal.style.display = 'flex';
+            newProfileInput.value = '';
+            confirmCreate.disabled = true;
+            confirmCreate.classList.remove('enabled');
+            setTimeout(() => newProfileInput.focus(), 0);
+            const inputListener = () => {
+                const name = newProfileInput.value.trim();
+                if (name) {
+                    confirmCreate.disabled = false;
+                    confirmCreate.classList.add('enabled');
+                } else {
+                    confirmCreate.disabled = true;
+                    confirmCreate.classList.remove('enabled');
+                }
+            };
+            newProfileInput.addEventListener('input', inputListener);
+            const enterListener = (e) => {
+                if (e.key === 'Enter' && !confirmCreate.disabled) {
+                    confirmClick();
+                }
+            };
+            newProfileInput.addEventListener('keydown', enterListener);
+            const confirmClick = () => {
+                if (!confirmCreate.disabled) {
+                    const name = newProfileInput.value.trim();
+                    let profiles = JSON.parse(localStorage.getItem('scripture-flow-profiles')) || [];
+                    if (profiles.includes(name)) {
+                        showCustomAlert('Name already exists');
+                        return;
+                    }
+                    profiles.push(name);
+                    localStorage.setItem('scripture-flow-profiles', JSON.stringify(profiles));
+                    localStorage.setItem('scripture-flow-current-profile', name);
+                    createModal.style.display = 'none';
+                    location.reload();
+                }
+            };
+            confirmCreate.addEventListener('click', confirmClick);
+            const cancelClick = () => {
+                createModal.style.display = 'none';
+                newProfileInput.removeEventListener('input', inputListener);
+                newProfileInput.removeEventListener('keydown', enterListener);
+                confirmCreate.removeEventListener('click', confirmClick);
+                cancelCreate.removeEventListener('click', cancelClick);
+            };
+            cancelCreate.addEventListener('click', cancelClick);
+        }
+        function showProfileList(profiles, current) {
+    // ---- clean old list -------------------------------------------------
+    let listDiv = $('profile-list');
+    if (listDiv) listDiv.remove();
+    listDiv = document.createElement('div');
+    listDiv.id = 'profile-list';
+    document.body.appendChild(listDiv);
+    // ---- grid container (names on the left, action column on the right) ----
+    const grid = document.createElement('div');
+    grid.style.cssText = `
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem 1rem;
+        width: 100%;
+        padding: 0.6rem;
+    `;
+    listDiv.appendChild(grid);
+    // ---- profile name buttons ------------------------------------------------
+    profiles.forEach(name => {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.classList.toggle('current', name === current);
+        // reuse the original button styling (same as #profile-list button)
+        btn.style.cssText = `
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: ${name === current ? 'var(--text)' : 'var(--text-muted)'};
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s, box-shadow 0.2s;
+        `;
+        // ----- hover glow (same as original) ---------------------------------
+        btn.onmouseenter = () => {
+            btn.style.background = 'var(--glass)';
+            btn.style.boxShadow = '0 0 10px var(--accent)';
+        };
+        btn.onmouseleave = () => {
+            btn.style.background = 'transparent';
+            btn.style.boxShadow = 'none';
+        };
+        btn.onclick = () => {
+            localStorage.setItem('scripture-flow-current-profile', name);
+            location.reload();
+        };
+        const spacer = document.createElement('div'); // empty cell for the right column
+        grid.appendChild(btn);
+        grid.appendChild(spacer);
+    });
+    // ---- action column (+ and −) --------------------------------------------
+    const actionCol = document.createElement('div');
+    actionCol.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: auto;
+        padding-left: 1rem;
+    `;
+    // ----- + Add profile ----------------------------------------------------
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '+';
+    addBtn.style.cssText = `
+        color: var(--text);
+        background: transparent;
+        border: none;
+        font-size: 1rem; /* original size */
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.4rem 0.6rem;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    `;
+    addBtn.onmouseenter = () => addBtn.style.opacity = '1';
+    addBtn.onmouseleave = () => addBtn.style.opacity = '0.7';
+    addBtn.onclick = e => {
+        e.stopPropagation();
+        listDiv.remove();
+        createNewProfile();
+    };
+    // ----- − Delete current profile -----------------------------------------
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '−';
+    delBtn.style.cssText = `
+        color: var(--incorrect);
+        background: transparent;
+        border: none;
+        font-size: 1rem; /* original size */
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.4rem 0.6rem;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    `;
+    delBtn.onmouseenter = () => delBtn.style.opacity = '1';
+    delBtn.onmouseleave = () => delBtn.style.opacity = '0.7';
+    delBtn.onclick = e => {
+        e.stopPropagation();
+        listDiv.remove();
+        showConfirmDelete(current);
+    };
+    actionCol.appendChild(addBtn);
+    actionCol.appendChild(delBtn);
+    listDiv.appendChild(actionCol);
+    // ---- click-outside to close ---------------------------------------------
+    const removeList = e => {
+        if (!listDiv.contains(e.target) && !$('profile-control').contains(e.target)) {
+            listDiv.remove();
+            document.removeEventListener('click', removeList);
+        }
+    };
+    document.addEventListener('click', removeList);
+}
+        function showConfirmDelete(name) {
+            deleteProfileName.textContent = name;
+            deleteModal.style.display = 'flex';
+            deleteInput.value = '';
+            confirmDelete.disabled = true;
+            confirmDelete.classList.remove('enabled');
+            renderDeletePhrase();
+            setTimeout(() => deleteInput.focus(), 0);
+        }
+        function renderDeletePhrase() {
+            const phrase = 'Yes, I am sure.';
+            deleteGhost.innerHTML = phrase.split('').map(char => `<span class="phrase-span">${char === ' ' ? '\u00A0' : char}</span>`).join('');
+        }
+        deleteInput.addEventListener('input', () => {
+            const value = deleteInput.value.toLowerCase();
+            const phrase = 'yes, i am sure.'.toLowerCase();
+            const spans = deleteGhost.querySelectorAll('span');
+            for (let i = 0; i < phrase.length; i++) {
+                if (i < value.length && value[i] === phrase[i]) {
+                    spans[i].classList.add('correct');
+                } else {
+                    spans[i].classList.remove('correct');
+                }
+            }
+            if (value === phrase) {
+                confirmDelete.disabled = false;
+                confirmDelete.classList.add('enabled');
+            } else {
+                confirmDelete.disabled = true;
+                confirmDelete.classList.remove('enabled');
+            }
+        });
+        confirmDelete.onclick = () => {
+            if (!confirmDelete.disabled) {
+                const name = deleteProfileName.textContent;
+                let profiles = JSON.parse(localStorage.getItem('scripture-flow-profiles')) || [];
+                profiles = profiles.filter(p => p !== name);
+                localStorage.setItem('scripture-flow-profiles', JSON.stringify(profiles));
+                localStorage.removeItem('kjv-typing-progress-v6-' + name);
+                localStorage.removeItem('scripture-flow-memory-bank-' + name);
+                if (currentProfile === name) {
+                    currentProfile = profiles.length ? profiles[0] : '';
+                    localStorage.setItem('scripture-flow-current-profile', currentProfile);
+                }
+                deleteModal.style.display = 'none';
+                location.reload();
+            }
+        };
+        cancelDelete.onclick = () => {
+            deleteModal.style.display = 'none';
+        };
+        /* ================================================
+           CUSTOM ALERT
+           ================================================ */
+        function showCustomAlert(message) {
+         customAlertMessage.textContent = message;
+        customAlertModal.style.display = 'flex';
+    customAlertOk.focus();
+    const handleEnter = (e) => {
+if (e.key === 'Enter') {
+    customAlertModal.style.display = 'none';
+    renderMemoryList();
+    document.removeEventListener('keydown', handleEnter);
+         }
+  };
+     document.addEventListener('keydown', handleEnter);
+customAlertOk.onclick = () => {
+    customAlertModal.style.display = 'none';
+    renderMemoryList();
+    document.removeEventListener('keydown', handleEnter);
+};
+}
+        initProfiles();
+        // Initialize Lucide icons after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+<!-- Buy Me a Coffee – Top Right -->
+<div style="
+    position: fixed;
+    top: 1.2rem;
+    right: 1.2rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.5rem;
+    padding: 0.5rem 1rem;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+"
+onmouseover="this.style.opacity='1'; this.style.boxShadow='0 6px 20px rgba(96,165,250,0.4)'"
+onmouseout="this.style.opacity='0.7'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.3)'">
+    Is my labour worthy of reward?
+    <a href="https://buymeacoffee.com/ronhouser"
+       target="_blank"
+       rel="noopener"
+       style="
+           color: var(--accent);
+           text-decoration: none;
+           font-weight: 600;
+           transition: all 0.25s ease;
+       ">
+        Buy me a coffee!
+    </a>
+</div>
+</body>
+</html>
+
