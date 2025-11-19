@@ -189,7 +189,7 @@
             width: 75%;
             aspect-ratio: 4 / 3;
             overflow: hidden;
-	    margin: 1.5rem auto 0;
+    margin: 1.5rem auto 0;
         }
         #mario-iframe {
             position: absolute;
@@ -1082,7 +1082,7 @@ Let the Word guide your fingers.</p>
         <!-- UPDATED: Mario Game UI -->
         <div id="mario-ui" class="card">
             <h2>Mario Teaches Typing</h2>
-	    <p style="color: #888; font-size: 0.85em; margin: 8px 0;">
+    <p style="color: #888; font-size: 0.85em; margin: 8px 0;">
         Click in the window to engage • Press ESC to exit
     </p>
             <div class="iframe-container">
@@ -1434,10 +1434,8 @@ Let the Word guide your fingers.</p>
     mainMenu.style.display = 'none';
     gameUI.style.display = 'none';
     marioUI.style.display = 'block';
-
     // Mute ambient music
     ambient.volume = 0;
-
     // Focus iframe after delay
     setTimeout(() => {
         if (marioIframe) {
@@ -1447,7 +1445,6 @@ Let the Word guide your fingers.</p>
 };
 // Track if we're in Mario mode
 let isMarioActive = false;
-
 // When iframe gains focus → mute ambient
 marioIframe.addEventListener('load', () => {
     marioIframe.contentWindow.addEventListener('focus', () => {
@@ -1457,27 +1454,21 @@ marioIframe.addEventListener('load', () => {
         }
     });
 });
-
 // When focus leaves iframe (e.g. Esc, click outside) → restore volume
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isMarioActive) {
         e.preventDefault();
-
         // Return to main menu
         marioUI.style.display = 'none';
         mainMenu.style.display = 'block';
-
         // Restore ambient music
         const targetVol = parseFloat($('volume-slider').value);
         ambient.volume = targetVol;
-
         isMarioActive = false;
-
         // Refocus app if needed
         inputEl.focus();
     }
 });
-
 // Optional: Also handle blur from iframe
 marioIframe.addEventListener('blur', () => {
     if (isMarioActive && marioUI.style.display === 'block') {
@@ -1494,12 +1485,10 @@ marioIframe.addEventListener('blur', () => {
     gameUI.style.display = 'none';
     marioUI.style.display = 'none';
     mainMenu.style.display = 'block';
-
     inputEl.disabled = true;
     currentMode = '';
     isChapterMode = false;
     currentMemoryItem = null;
-
     // Restore ambient volume
     const targetVol = parseFloat($('volume-slider').value);
     ambient.volume = targetVol;
@@ -1947,10 +1936,8 @@ marioIframe.addEventListener('blur', () => {
             detailContent.innerHTML = `
                 <div class="stat-detail">
                     <strong>Journey Length:</strong> ${journeyDays} day${journeyDays !== 1 ? 's' : ''}
-
                     <p>Total days since your first verse completion.</p>
                     <strong>Current Streak:</strong> ${p.streak} day${p.streak !== 1 ? 's' : ''}
-
                     <p>Consecutive days with at least one verse completed.</p>
                 </div>
             `;
@@ -1976,22 +1963,16 @@ marioIframe.addEventListener('blur', () => {
             detailContent.innerHTML = `
                 <div class="stat-detail">
                     <strong>Overall Average WPM:</strong> ${overallAvgWPM}
-
                     <p>The average words per minute across all completed verses, calculated as the total sum of individual verse WPMs divided by the number of verses. Each verse WPM = (number of words / typing time in minutes).</p>
                     <strong>Current Average WPM:</strong> ${currentAvgWPM}
-
                     <p>Average WPM of the last ${recentCount} verse${recentCount !== 1 ? 's' : ''}.</p>
                     <strong>Max WPM:</strong> ${p.maxWPM || 0}
-
                     <p>Your highest speed on a single verse.</p>
                     <strong>Fastest Verse: </strong><span style="color: var(--text);">${fastestRef}</span>
-
                     <p style="margin-top:0.5rem; font-style:italic;">${fastestText}</p>
                     <strong>Overall Average Accuracy:</strong> ${overallAvgAccuracy}%
-
                     <p>The average accuracy across all completed verses, where per-verse accuracy = (verse characters / (characters + error attempts)) × 100.</p>
                     <strong>Current Average Accuracy:</strong> ${currentAvgAccuracy}%
-
                     <p>Average accuracy of the last ${recentCount} verse${recentCount !== 1 ? 's' : ''}.</p>
                 </div>
             `;
@@ -2006,9 +1987,13 @@ marioIframe.addEventListener('blur', () => {
         function renderMemoryList() {
             const bank = getMemoryBank();
             if (bank.length === 0) {
+                memoryContent.style.display = 'flex';
+                memoryContent.style.justifyContent = 'center';
+                memoryContent.style.alignItems = 'center';
                 memoryContent.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Add verses to your memory bank.</p>';
                 return;
             }
+            memoryContent.style.display = 'grid';
             memoryContent.innerHTML = '';
             bank.forEach(item => {
                 const wordCount = item.text.split(' ').length;
@@ -2273,22 +2258,19 @@ marioIframe.addEventListener('blur', () => {
             if (showChapterButton) {
                 const typeChapterBtn = $('type-chapter');
                 typeChapterBtn.onclick = () => {
-                    if (isSelector) {
-                        refSelectorModal.style.display = 'none';
-                        currentSelectorCallback(book, chapter);
-                    } else {
-                        modal.style.display = 'none';
-                        mainMenu.style.display = 'none';
-                        gameUI.style.display = 'block';
-                        marioUI.style.display = 'none'; // NEW: Hide Mario if visible
-                        currentMode = 'choice';
-                        isChapterMode = true;
-                        currentBook = book;
-                        currentChapter = chapter;
-                        totalVerses = data.total;
-                        unlockAudio();
-                        loadVerse(`${book} ${chapter}:1`);
-                    }
+                    refSelectorModal.style.display = 'none';
+                    modal.style.display = 'none';
+                    memoryModal.style.display = 'none';
+                    mainMenu.style.display = 'none';
+                    gameUI.style.display = 'block';
+                    marioUI.style.display = 'none';
+                    currentMode = 'choice';
+                    isChapterMode = true;
+                    currentBook = book;
+                    currentChapter = chapter;
+                    totalVerses = data.total;
+                    unlockAudio();
+                    loadVerse(`${book} ${chapter}:1`);
                 };
             }
         }
@@ -2418,6 +2400,9 @@ marioIframe.addEventListener('blur', () => {
             const marioControl = $('mario-control'); // NEW: Add hover for Mario
             marioControl.addEventListener('mouseover', () => marioControl.style.opacity = '1');
             marioControl.addEventListener('mouseout', () => marioControl.style.opacity = '0.5');
+            if (!profiles.length) {
+                createNewProfile();
+            }
         }
         function createNewProfile() {
             createModal.style.display = 'flex';
@@ -2696,4 +2681,3 @@ onmouseout="this.style.opacity='0.7'; this.style.boxShadow='0 4px 16px rgba(0,0,
 </div>
 </body>
 </html>
-
