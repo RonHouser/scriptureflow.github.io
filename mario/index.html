@@ -14,6 +14,8 @@
     <script>
         const wasm = "https://v8.js-dos.com/latest/js-dos-wasm.js";
         Dos("#canvas", "mario-teaches-typing.jsdos", { wdosboxUrl: wasm }).ready((fs, main) => {
+            // These two lines fix the black screen for this exact game
+            fs.chdir("C:\\");
             main(["-c", "MARIO.EXE"]);
         });
     </script>
