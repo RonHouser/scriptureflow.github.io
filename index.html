@@ -969,29 +969,31 @@
         #delete-profile-name, #delete-memory-name {
             color: var(--accent);
         }
-        #chapter-options {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1rem;
-        }
-        #type-chapter {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 1.2rem;
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
-            width: auto;
-        }
-        #type-chapter:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
-        }
+.chapter-options {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.type-entire-chapter {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 1.2rem;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+    width: auto;
+}
+
+.type-entire-chapter:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
+}
         #custom-alert-modal .card {
             text-align: center;
         }
@@ -2173,116 +2175,124 @@ Let the Word guide your fingers.</p>
             }
             renderChapterText(selectorContent, book, chapter, true);
         }
-        function renderChapterText(container, book, chapter, isSelector) {
-            const cacheKey = `${book} ${chapter}`;
-            const data = chapterDataCache[cacheKey];
-            const p = getProgress();
-            const completedSet = new Set(p.completed);
-            const versesHTML = data.verses.map(v => {
-                const verseNum = v.verse;
-                const ref = `${book} ${chapter}:${verseNum}`;
-                const isCompleted = completedSet.has(ref);
-                const cleanText = v.text.replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim().replace(/‘/g, "'").replace(/’/g, "'").replace(/“/g, '"').replace(/”/g, '"');
-                return `
-                    <div class="verse ${isCompleted ? 'completed' : ''}">
-                        <button class="verse-btn add-btn" data-ref="${ref}" data-text="${encodeURIComponent(cleanText)}">
-                            <i data-lucide="brain"></i>
-                        </button>
-                        <span class="verse-number">${verseNum}</span>
-                        <span class="verse-text">${cleanText}</span>
-                        <button class="verse-btn type-btn" data-ref="${ref}">
-                            <i data-lucide="keyboard"></i>
-                        </button>
-                    </div>
-                `;
-            }).join('');
-            let html = `<div class="chapter-text">${versesHTML}</div>`;
-            const showChapterButton = true;
-            if (showChapterButton) {
-                html = `<div id="chapter-options"><button id="type-chapter">Type Entire Chapter</button></div>` + html;
+function renderChapterText(container, book, chapter, isSelector) {
+    const cacheKey = `${book} ${chapter}`;
+    const data = chapterDataCache[cacheKey];
+    const p = getProgress();
+    const completedSet = new Set(p.completed);
+    const versesHTML = data.verses.map(v => {
+        const verseNum = v.verse;
+        const ref = `${book} ${chapter}:${verseNum}`;
+        const isCompleted = completedSet.has(ref);
+        const cleanText = v.text.replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim().replace(/‘/g, "'").replace(/’/g, "'").replace(/“/g, '"').replace(/”/g, '"');
+        return `
+            <div class="verse ${isCompleted ? 'completed' : ''}">
+                <button class="verse-btn add-btn" data-ref="${ref}" data-text="${encodeURIComponent(cleanText)}">
+                    <i data-lucide="brain"></i>
+                </button>
+                <span class="verse-number">${verseNum}</span>
+                <span class="verse-text">${cleanText}</span>
+                <button class="verse-btn type-btn" data-ref="${ref}">
+                    <i data-lucide="keyboard"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+
+    let html = `<div class="chapter-text">${versesHTML}</div>`;
+    
+    // Add chapter button (now using class instead of id)
+    html = `<div class="chapter-options"><button class="type-entire-chapter">Type Entire Chapter</button></div>` + html;
+
+    container.innerHTML = html;
+    lucide.createIcons();
+
+    // Attach events
+    container.querySelectorAll('.add-btn').forEach(btn => {
+        btn.onclick = () => {
+            const ref = btn.dataset.ref;
+            const text = decodeURIComponent(btn.dataset.text);
+            const bank = getMemoryBank();
+            if (bank.some(i => i.ref === ref)) {
+                showCustomAlert('Already in Memory Bank');
+                return;
             }
-            container.innerHTML = html;
-            lucide.createIcons();
-            container.querySelectorAll('.add-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const ref = btn.dataset.ref;
-                    const text = decodeURIComponent(btn.dataset.text);
-                    const bank = getMemoryBank();
-                    if (bank.some(i => i.ref === ref)) {
-                        showCustomAlert('Already in Memory Bank');
-                        return;
-                    }
-                    bank.push({ref, text, hidden: []});
-                    saveMemoryBank(bank);
-                    renderMemoryList();
-                    showCustomAlert('Added to Memory Bank');
-                    if (isSelector && !currentIsChoice) {
-                        refSelectorModal.style.display = 'none';
-                        const [b, rest] = ref.split(' ');
-                        const [c, v] = rest.split(':');
-                        currentSelectorCallback(b, parseInt(c), parseInt(v));
-                    }
-                };
-            });
-            container.querySelectorAll('.type-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const ref = btn.dataset.ref;
-                    const [b, rest] = ref.split(' ');
-                    const [c, v] = rest.split(':');
-                    const ch = parseInt(c);
-                    const vs = parseInt(v);
-                    if (isSelector) {
-                        if (currentIsChoice) {
-                            refSelectorModal.style.display = 'none';
-                            currentSelectorCallback(b, ch, vs);
-                        } else {
-                            const text = decodeURIComponent(btn.closest('.verse').querySelector('.add-btn').dataset.text);
-                            let bank = getMemoryBank();
-                            if (!bank.some(i => i.ref === ref)) {
-                                bank.push({ref, text, hidden: []});
-                                saveMemoryBank(bank);
-                            }
-                            refSelectorModal.style.display = 'none';
-                            memoryModal.style.display = 'none';
-                            currentMemoryItem = bank.find(i => i.ref === ref);
-                            mainMenu.style.display = 'none';
-                            gameUI.style.display = 'block';
-                            marioUI.style.display = 'none'; // NEW: Hide Mario if visible
-                            currentMode = 'memory';
-                            unlockAudio();
-                            loadVerse(ref, text);
-                        }
-                    } else {
-                        modal.style.display = 'none';
-                        mainMenu.style.display = 'none';
-                        gameUI.style.display = 'block';
-                        marioUI.style.display = 'none'; // NEW: Hide Mario if visible
-                        currentMode = 'choice';
-                        isChapterMode = false;
-                        unlockAudio();
-                        loadVerse(ref);
-                    }
-                };
-            });
-            if (showChapterButton) {
-                const typeChapterBtn = $('type-chapter');
-                typeChapterBtn.onclick = () => {
+            bank.push({ref, text, hidden: []});
+            saveMemoryBank(bank);
+            renderMemoryList();
+            showCustomAlert('Added to Memory Bank');
+            if (isSelector && !currentIsChoice) {
+                refSelectorModal.style.display = 'none';
+                const [b, rest] = ref.split(' ');
+                const [c, v] = rest.split(':');
+                currentSelectorCallback(b, parseInt(c), parseInt(v));
+            }
+        };
+    });
+
+    container.querySelectorAll('.type-btn').forEach(btn => {
+        btn.onclick = () => {
+            const ref = btn.dataset.ref;
+            const [b, rest] = ref.split(' ');
+            const [c, v] = rest.split(':');
+            const ch = parseInt(c);
+            const vs = parseInt(v);
+
+            if (isSelector) {
+                if (currentIsChoice) {
                     refSelectorModal.style.display = 'none';
-                    modal.style.display = 'none';
+                    currentSelectorCallback(b, ch, vs);
+                } else {
+                    const text = decodeURIComponent(btn.closest('.verse').querySelector('.add-btn').dataset.text);
+                    let bank = getMemoryBank();
+                    if (!bank.some(i => i.ref === ref)) {
+                        bank.push({ref, text, hidden: []});
+                        saveMemoryBank(bank);
+                    }
+                    refSelectorModal.style.display = 'none';
                     memoryModal.style.display = 'none';
+                    currentMemoryItem = bank.find(i => i.ref === ref);
                     mainMenu.style.display = 'none';
                     gameUI.style.display = 'block';
                     marioUI.style.display = 'none';
-                    currentMode = 'choice';
-                    isChapterMode = true;
-                    currentBook = book;
-                    currentChapter = chapter;
-                    totalVerses = data.total;
+                    currentMode = 'memory';
                     unlockAudio();
-                    loadVerse(`${book} ${chapter}:1`);
-                };
+                    loadVerse(ref, text);
+                }
+            } else {
+                modal.style.display = 'none';
+                mainMenu.style.display = 'none';
+                gameUI.style.display = 'block';
+                marioUI.style.display = 'none';
+                currentMode = 'choice';
+                isChapterMode = false;
+                unlockAudio();
+                loadVerse(ref);
             }
-        }
+        };
+    });
+
+    // === THIS IS THE FIXED PART ===
+    const typeChapterBtn = container.querySelector('.type-entire-chapter');
+    if (typeChapterBtn) {
+        typeChapterBtn.onclick = () => {
+            refSelectorModal.style.display = 'none';
+            modal.style.display = 'none';
+            memoryModal.style.display = 'none';
+            mainMenu.style.display = 'none';
+            gameUI.style.display = 'block';
+            marioUI.style.display = 'none';
+            currentMode = 'choice';
+            isChapterMode = true;
+            currentBook = book;
+            currentChapter = chapter;
+            totalVerses = data.total || data.verses.length;
+            unlockAudio();
+            loadVerse(`${book} ${chapter}:1`);
+        };
+    }
+    // ==============================
+}
         /* ================================================
            EXPORT / CLEAR
            ================================================ */
