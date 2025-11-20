@@ -23,7 +23,7 @@
     <!-- Fonts -->
     <link href="https://rsms.me/inter/inter.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <style>
         :root {
             --bg-start: #0a0e1a;
@@ -117,6 +117,10 @@
             margin-bottom: 2.5rem;
             line-height: 1.6;
         }
+        /* ============================================================= */
+        /* =========================== PART 1 END ======================== */
+        /* ============================================================= */
+
         .mode-buttons {
             display: flex;
             justify-content: center;
@@ -186,16 +190,16 @@
         }
         .iframe-container {
             position: relative;
-            width: 75%;
+            width: 85%;
             aspect-ratio: 4 / 3;
             overflow: hidden;
-    margin: 1.5rem auto 0;
+            margin: 1.5rem auto 0;
         }
         #mario-iframe {
-            position: absolute;
+            position: relative;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 85%;
+            height: 85%;
             border-radius: 1rem;
             border: 5px solid var(--glass-border);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -395,24 +399,24 @@
             cursor: pointer;
             opacity: 0;
             transition: opacity 0.3s ease;
-    font-size: 0.8rem;
-         font-weight: bold;
-         border-radius: 50%;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         z-index: 10;
-         pointer-events: auto;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: auto;
         }
-.memory-bubble:hover .delete-btn,
-.stat:hover .delete-btn {
-        opacity: 0.3;
-}
-.memory-bubble .delete-btn:hover,
-.stat .delete-btn:hover {
-    opacity: 0.8;
-    color: red;
-}
+        .memory-bubble:hover .delete-btn,
+        .stat:hover .delete-btn {
+            opacity: 0.3;
+        }
+        .memory-bubble .delete-btn:hover,
+        .stat .delete-btn:hover {
+            opacity: 0.8;
+            color: red;
+        }
         .stat:hover .delete-btn {
             opacity: 1;
         }
@@ -572,30 +576,30 @@
             color: var(--text);
         }
         .verse-btn {
-         position: relative;
-         background: transparent;
-         border: none;
-         color: var(--accent);
-         font-size: 1.2rem;
-         cursor: pointer;
-         padding: 0.2rem;
-         transition: all 0.25s ease;
-         flex-shrink: 0;
-         border-radius: 50%;
-         width: 32px;
-         height: 32px;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-    opacity: 0.6;
-}
-.verse-btn:hover {
-         color: var(--accent);
-         transform: scale(1.15);
-         background: transparent;
-    opacity: 1;
-         z-index: 1;
-}
+            position: relative;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+        }
+        .verse-btn:hover {
+            color: var(--accent);
+            transform: scale(1.15);
+            background: transparent;
+            opacity: 1;
+            z-index: 1;
+        }
         .verse-btn:hover i {
             filter: drop-shadow(0 0 8px var(--accent-hover));
         }
@@ -1013,37 +1017,37 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
         }
-.mode-btn i {
-    width: 32px;
-    height: 32px;
-    stroke: currentColor; /* Inherits --accent blue */
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    fill: none;
-    transition: all 0.3s ease;
-}
-.mode-btn:hover i {
-    stroke: var(--accent-hover); /* Darker blue on hover */
-    stroke-width: 2.5;
-    filter: drop-shadow(0 0 8px var(--accent-hover));
-}
-#confirm-delete-memory {
-    background: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 1.2rem;
-    padding: 0.75rem 1.4rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-#confirm-delete-memory:hover {
-    background: #dc2626;
-    transform: translateY(-2px);
-}
+        .mode-btn i {
+            width: 32px;
+            height: 32px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+        .mode-btn:hover i {
+            stroke: var(--accent-hover);
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 8px var(--accent-hover));
+        }
+        #confirm-delete-memory {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 1.2rem;
+            padding: 0.75rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        #confirm-delete-memory:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -1059,19 +1063,19 @@
             <p>Type verses from the King James Bible.
 Let the Word guide your fingers.</p>
             <div class="mode-buttons">
-    <button id="random-btn" class="mode-btn">
-        <i data-lucide="shuffle"></i>
-        <div class="tooltip"><h3>Random</h3><p>Let the verses flow randomly</p></div>
-    </button>
-    <button id="memory-btn" class="mode-btn">
-        <i data-lucide="brain"></i>
-        <div class="tooltip"><h3>Memory</h3><p>Memorize verses by fading words</p></div>
-    </button>
-    <button id="choice-btn" class="mode-btn">
-        <i data-lucide="list"></i>
-        <div class="tooltip"><h3>Choice</h3><p>Select specific verses or chapters</p></div>
-    </button>
-</div>
+                <button id="random-btn" class="mode-btn">
+                    <i data-lucide="shuffle"></i>
+                    <div class="tooltip"><h3>Random</h3><p>Let the verses flow randomly</p></div>
+                </button>
+                <button id="memory-btn" class="mode-btn">
+                    <i data-lucide="brain"></i>
+                    <div class="tooltip"><h3>Memory</h3><p>Memorize verses by fading words</p></div>
+                </button>
+                <button id="choice-btn" class="mode-btn">
+                    <i data-lucide="list"></i>
+                    <div class="tooltip"><h3>Choice</h3><p>Select specific verses or chapters</p></div>
+                </button>
+            </div>
         </div>
         <!-- GAME UI -->
         <div id="game-ui" class="card">
@@ -1082,9 +1086,9 @@ Let the Word guide your fingers.</p>
         <!-- UPDATED: Mario Game UI -->
         <div id="mario-ui" class="card">
             <h2>Mario Teaches Typing</h2>
-    <p style="color: #888; font-size: 0.85em; margin: 8px 0;">
-        Click in the window to engage • Press ESC to exit
-    </p>
+            <p style="color: #888; font-size: 0.85em; margin: 8px 0;">
+                Click in the window to engage • Press ESC to exit
+            </p>
             <div class="iframe-container">
                 <iframe id="mario-iframe" src="https://www.retrogames.cz/js-dos-622start.php?id2=1254&language=EN" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen tabindex="0"></iframe>
             </div>
@@ -1216,6 +1220,10 @@ Let the Word guide your fingers.</p>
             <button id="custom-alert-ok">OK</button>
         </div>
     </div>
+    <!-- ============================================================= -->
+    <!-- =========================== PART 2 END ======================== -->
+    <!-- ============================================================= -->
+
     <script>
         let currentProfile = localStorage.getItem('scripture-flow-current-profile') || '';
         let STORAGE_KEY = currentProfile ? 'kjv-typing-progress-v6-' + currentProfile : 'kjv-typing-progress-v6';
@@ -1431,69 +1439,70 @@ Let the Word guide your fingers.</p>
         };
         // UPDATED: Mario Button Click Handler
         $('mario-control').onclick = () => {
-    mainMenu.style.display = 'none';
-    gameUI.style.display = 'none';
-    marioUI.style.display = 'block';
-    // Mute ambient music
-    ambient.volume = 0;
-    // Focus iframe after delay
-    setTimeout(() => {
-        if (marioIframe) {
-            marioIframe.focus();
-        }
-    }, 100);
-};
-// Track if we're in Mario mode
-let isMarioActive = false;
-// When iframe gains focus → mute ambient
-marioIframe.addEventListener('load', () => {
-    marioIframe.contentWindow.addEventListener('focus', () => {
-        if (marioUI.style.display === 'block') {
+            mainMenu.style.display = 'none';
+            gameUI.style.display = 'none';
+            marioUI.style.display = 'block';
+            // Mute ambient music
             ambient.volume = 0;
-            isMarioActive = true;
-        }
-    });
-});
-// When focus leaves iframe (e.g. Esc, click outside) → restore volume
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMarioActive) {
-        e.preventDefault();
-        // Return to main menu
-        marioUI.style.display = 'none';
-        mainMenu.style.display = 'block';
-        // Restore ambient music
-        const targetVol = parseFloat($('volume-slider').value);
-        ambient.volume = targetVol;
-        isMarioActive = false;
-        // Refocus app if needed
-        inputEl.focus();
-    }
-});
-// Optional: Also handle blur from iframe
-marioIframe.addEventListener('blur', () => {
-    if (isMarioActive && marioUI.style.display === 'block') {
-        // User clicked outside or tabbed away — keep muted until Esc
-        // (or you can auto-resume here if preferred)
-    }
-});
+            // Focus iframe after delay
+            setTimeout(() => {
+                if (marioIframe) {
+                    marioIframe.focus();
+                }
+            }, 100);
+        };
+        // Track if we're in Mario mode
+        let isMarioActive = false;
+        // When iframe gains focus → mute ambient
+        marioIframe.addEventListener('load', () => {
+            marioIframe.contentWindow.addEventListener('focus', () => {
+                if (marioUI.style.display === 'block') {
+                    ambient.volume = 0;
+                    isMarioActive = true;
+                }
+            });
+        });
+        // When focus leaves iframe (e.g. Esc, click outside) → restore volume
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isMarioActive) {
+                e.preventDefault();
+                // Return to main menu
+                marioUI.style.display = 'none';
+                mainMenu.style.display = 'block';
+                // Restore ambient music
+                const targetVol = parseFloat($('volume-slider').value);
+                ambient.volume = targetVol;
+                isMarioActive = false;
+                // Refocus app if needed
+                inputEl.focus();
+            }
+        });
+        // Optional: Also handle blur from iframe
+        marioIframe.addEventListener('blur', () => {
+            if (isMarioActive && marioUI.style.display === 'block') {
+                // User clicked outside or tabbed away — keep muted until Esc
+            }
+        });
         $('progress-control').onclick = () => {
             currentView = 'overview';
             showOverview();
             modal.style.display = 'flex';
+	    marioIframe.src = "https://www.retrogames.cz/js-dos-622start.php?id2=1254&language=EN";
         };
         $('menu-control').onclick = () => {
-    gameUI.style.display = 'none';
-    marioUI.style.display = 'none';
-    mainMenu.style.display = 'block';
-    inputEl.disabled = true;
-    currentMode = '';
-    isChapterMode = false;
-    currentMemoryItem = null;
-    // Restore ambient volume
-    const targetVol = parseFloat($('volume-slider').value);
-    ambient.volume = targetVol;
-    isMarioActive = false;
-};
+            gameUI.style.display = 'none';
+            marioUI.style.display = 'none';
+            mainMenu.style.display = 'block';
+            inputEl.disabled = true;
+            currentMode = '';
+            isChapterMode = false;
+            currentMemoryItem = null;
+            // Restore ambient volume
+            const targetVol = parseFloat($('volume-slider').value);
+            ambient.volume = targetVol;
+            isMarioActive = false;
+	    marioIframe.src = "https://www.retrogames.cz/js-dos-622start.php?id2=1254&language=EN";
+        };
         function unlockAudio() {
             if (audioUnlocked) return;
             audioUnlocked = true;
@@ -2397,7 +2406,7 @@ marioIframe.addEventListener('blur', () => {
             const menuControl = $('menu-control');
             menuControl.addEventListener('mouseover', () => menuControl.style.opacity = '1');
             menuControl.addEventListener('mouseout', () => menuControl.style.opacity = '0.5');
-            const marioControl = $('mario-control'); // NEW: Add hover for Mario
+            const marioControl = $('mario-control');
             marioControl.addEventListener('mouseover', () => marioControl.style.opacity = '1');
             marioControl.addEventListener('mouseout', () => marioControl.style.opacity = '0.5');
             if (!profiles.length) {
@@ -2453,119 +2462,110 @@ marioIframe.addEventListener('blur', () => {
             cancelCreate.addEventListener('click', cancelClick);
         }
         function showProfileList(profiles, current) {
-    // ---- clean old list -------------------------------------------------
-    let listDiv = $('profile-list');
-    if (listDiv) listDiv.remove();
-    listDiv = document.createElement('div');
-    listDiv.id = 'profile-list';
-    document.body.appendChild(listDiv);
-    // ---- grid container (names on the left, action column on the right) ----
-    const grid = document.createElement('div');
-    grid.style.cssText = `
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 0.5rem 1rem;
-        width: 100%;
-        padding: 0.6rem;
-    `;
-    listDiv.appendChild(grid);
-    // ---- profile name buttons ------------------------------------------------
-    profiles.forEach(name => {
-        const btn = document.createElement('button');
-        btn.textContent = name;
-        btn.classList.toggle('current', name === current);
-        // reuse the original button styling (same as #profile-list button)
-        btn.style.cssText = `
-            width: 100%;
-            text-align: left;
-            background: transparent;
-            border: none;
-            color: ${name === current ? 'var(--text)' : 'var(--text-muted)'};
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            transition: background 0.2s, box-shadow 0.2s;
-        `;
-        // ----- hover glow (same as original) ---------------------------------
-        btn.onmouseenter = () => {
-            btn.style.background = 'var(--glass)';
-            btn.style.boxShadow = '0 0 10px var(--accent)';
-        };
-        btn.onmouseleave = () => {
-            btn.style.background = 'transparent';
-            btn.style.boxShadow = 'none';
-        };
-        btn.onclick = () => {
-            localStorage.setItem('scripture-flow-current-profile', name);
-            location.reload();
-        };
-        const spacer = document.createElement('div'); // empty cell for the right column
-        grid.appendChild(btn);
-        grid.appendChild(spacer);
-    });
-    // ---- action column (+ and −) --------------------------------------------
-    const actionCol = document.createElement('div');
-    actionCol.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-left: auto;
-        padding-left: 1rem;
-    `;
-    // ----- + Add profile ----------------------------------------------------
-    const addBtn = document.createElement('button');
-    addBtn.textContent = '+';
-    addBtn.style.cssText = `
-        color: var(--text);
-        background: transparent;
-        border: none;
-        font-size: 1rem; /* original size */
-        font-weight: 600;
-        cursor: pointer;
-        padding: 0.4rem 0.6rem;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    `;
-    addBtn.onmouseenter = () => addBtn.style.opacity = '1';
-    addBtn.onmouseleave = () => addBtn.style.opacity = '0.7';
-    addBtn.onclick = e => {
-        e.stopPropagation();
-        listDiv.remove();
-        createNewProfile();
-    };
-    // ----- − Delete current profile -----------------------------------------
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '−';
-    delBtn.style.cssText = `
-        color: var(--incorrect);
-        background: transparent;
-        border: none;
-        font-size: 1rem; /* original size */
-        font-weight: 600;
-        cursor: pointer;
-        padding: 0.4rem 0.6rem;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    `;
-    delBtn.onmouseenter = () => delBtn.style.opacity = '1';
-    delBtn.onmouseleave = () => delBtn.style.opacity = '0.7';
-    delBtn.onclick = e => {
-        e.stopPropagation();
-        listDiv.remove();
-        showConfirmDelete(current);
-    };
-    actionCol.appendChild(addBtn);
-    actionCol.appendChild(delBtn);
-    listDiv.appendChild(actionCol);
-    // ---- click-outside to close ---------------------------------------------
-    const removeList = e => {
-        if (!listDiv.contains(e.target) && !$('profile-control').contains(e.target)) {
-            listDiv.remove();
-            document.removeEventListener('click', removeList);
+            let listDiv = $('profile-list');
+            if (listDiv) listDiv.remove();
+            listDiv = document.createElement('div');
+            listDiv.id = 'profile-list';
+            document.body.appendChild(listDiv);
+            const grid = document.createElement('div');
+            grid.style.cssText = `
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 0.5rem 1rem;
+                width: 100%;
+                padding: 0.6rem;
+            `;
+            listDiv.appendChild(grid);
+            profiles.forEach(name => {
+                const btn = document.createElement('button');
+                btn.textContent = name;
+                btn.classList.toggle('current', name === current);
+                btn.style.cssText = `
+                    width: 100%;
+                    text-align: left;
+                    background: transparent;
+                    border: none;
+                    color: ${name === current ? 'var(--text)' : 'var(--text-muted)'};
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    border-radius: 0.5rem;
+                    transition: background 0.2s, box-shadow 0.2s;
+                `;
+                btn.onmouseenter = () => {
+                    btn.style.background = 'var(--glass)';
+                    btn.style.boxShadow = '0 0 10px var(--accent)';
+                };
+                btn.onmouseleave = () => {
+                    btn.style.background = 'transparent';
+                    btn.style.boxShadow = 'none';
+                };
+                btn.onclick = () => {
+                    localStorage.setItem('scripture-flow-current-profile', name);
+                    location.reload();
+                };
+                const spacer = document.createElement('div');
+                grid.appendChild(btn);
+                grid.appendChild(spacer);
+            });
+            const actionCol = document.createElement('div');
+            actionCol.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-left: auto;
+                padding-left: 1rem;
+            `;
+            const addBtn = document.createElement('button');
+            addBtn.textContent = '+';
+            addBtn.style.cssText = `
+                color: var(--text);
+                background: transparent;
+                border: none;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                padding: 0.4rem 0.6rem;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            `;
+            addBtn.onmouseenter = () => addBtn.style.opacity = '1';
+            addBtn.onmouseleave = () => addBtn.style.opacity = '0.7';
+            addBtn.onclick = e => {
+                e.stopPropagation();
+                listDiv.remove();
+                createNewProfile();
+            };
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '−';
+            delBtn.style.cssText = `
+                color: var(--incorrect);
+                background: transparent;
+                border: none;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                padding: 0.4rem 0.6rem;
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            `;
+            delBtn.onmouseenter = () => delBtn.style.opacity = '1';
+            delBtn.onmouseleave = () => delBtn.style.opacity = '0.7';
+            delBtn.onclick = e => {
+                e.stopPropagation();
+                listDiv.remove();
+                showConfirmDelete(current);
+            };
+            actionCol.appendChild(addBtn);
+            actionCol.appendChild(delBtn);
+            listDiv.appendChild(actionCol);
+            const removeList = e => {
+                if (!listDiv.contains(e.target) && !$('profile-control').contains(e.target)) {
+                    listDiv.remove();
+                    document.removeEventListener('click', removeList);
+                }
+            };
+            document.addEventListener('click', removeList);
         }
-    };
-    document.addEventListener('click', removeList);
-}
         function showConfirmDelete(name) {
             deleteProfileName.textContent = name;
             deleteModal.style.display = 'flex';
@@ -2621,29 +2621,33 @@ marioIframe.addEventListener('blur', () => {
            CUSTOM ALERT
            ================================================ */
         function showCustomAlert(message) {
-         customAlertMessage.textContent = message;
-        customAlertModal.style.display = 'flex';
-    customAlertOk.focus();
-    const handleEnter = (e) => {
-if (e.key === 'Enter') {
-    customAlertModal.style.display = 'none';
-    renderMemoryList();
-    document.removeEventListener('keydown', handleEnter);
-         }
-  };
-     document.addEventListener('keydown', handleEnter);
-customAlertOk.onclick = () => {
-    customAlertModal.style.display = 'none';
-    renderMemoryList();
-    document.removeEventListener('keydown', handleEnter);
-};
-}
+            customAlertMessage.textContent = message;
+            customAlertModal.style.display = 'flex';
+            customAlertOk.focus();
+            const handleEnter = (e) => {
+                if (e.key === 'Enter') {
+                    customAlertModal.style.display = 'none';
+                    renderMemoryList();
+                    document.removeEventListener('keydown', handleEnter);
+                }
+            };
+            document.addEventListener('keydown', handleEnter);
+            customAlertOk.onclick = () => {
+                customAlertModal.style.display = 'none';
+                renderMemoryList();
+                document.removeEventListener('keydown', handleEnter);
+            };
+        }
         initProfiles();
         // Initialize Lucide icons after DOM loads
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
         });
     </script>
+    <!-- ============================================================= -->
+    <!-- =========================== PART 3 END ======================== -->
+    <!-- ============================================================= -->
+
 <!-- Buy Me a Coffee – Top Right -->
 <div style="
     position: fixed;
@@ -2681,4 +2685,3 @@ onmouseout="this.style.opacity='0.7'; this.style.boxShadow='0 4px 16px rgba(0,0,
 </div>
 </body>
 </html>
-
