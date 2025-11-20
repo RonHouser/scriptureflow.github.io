@@ -12,11 +12,14 @@
     <div id="canvas"></div>
     <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
     <script>
-        const wasm = "https://v8.js-dos.com/latest/js-dos-wasm.js";
-        Dos("#canvas", "mario-teaches-typing.jsdos", { wdosboxUrl: wasm }).ready((fs, main) => {
-            fs.chdir("C:\\");
-            // This auto-types the command and presses Enter so the game starts immediately
-            main(["-c", "echo off && MARIO.EXE"]);
+        const options = {
+            wdosboxUrl: "https://v8.js-dos.com/latest/js-dos-wasm.js"
+        };
+        Dos("#canvas", options).ready((fs, main) => {
+            fs.extract("mario-teaches-typing.jsdos").then(() => {
+                fs.chdir("/");  // Go to root where files are extracted
+                main(["MARIO.EXE"]);  // Directly run the executable (no -c needed)
+            });
         });
     </script>
 </body>
