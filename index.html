@@ -25,6 +25,7 @@
     <link href="https://rsms.me/inter/inter.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.39/build/Tone.min.js"></script>
     <style>
         :root {
             --bg-start: #0a0e1a;
@@ -1354,6 +1355,40 @@
 </div>
     <script>
         let currentProfile = localStorage.getItem('scripture-flow-current-profile') || '';
+// ─────── COMPLETION SOUND  ───────
+let completionSynth = null;
+let completionReady = false;
+
+async function initCompletionSound() {
+  if (completionReady) return;
+  await Tone.start(); // unlocks audio context on first real user interaction
+  
+  completionSynth = new Tone.PolySynth(Tone.FMSynth, {
+    harmonicity: 3,
+    modulationIndex: 10,
+    oscillator: { type: "sine" },
+    envelope: { attack: 0.8, decay: 1, sustain: 0.6, release: 2 },
+    modulation: { type: "square" },
+    volume: -9
+  });
+
+  const reverb = new Tone.Reverb({ decay: 8, wet: 0.6 }).toDestination();
+  const delay  = new Tone.FeedbackDelay("8n", 0.4).toDestination();
+  const filter = new Tone.Filter(800, "lowpass").connect(reverb).connect(delay);
+  
+  completionSynth.connect(filter);
+  completionReady = true;
+}
+
+function playCompletionSound() {
+  if (!completionReady) return;
+  completionSynth.triggerAttackRelease("C3", "8n");
+}
+
+// Auto-init on first click/tap anywhere (required by browsers)
+document.documentElement.addEventListener('click', initCompletionSound, { once: true });
+document.documentElement.addEventListener('touchstart', initCompletionSound, { once: true });
+// ─────────────────────────────────────────────────────────────
         let STORAGE_KEY = currentProfile ? 'kjv-typing-progress-v6-' + currentProfile : 'kjv-typing-progress-v6';
         let MEMORY_KEY = currentProfile ? 'scripture-flow-memory-bank-' + currentProfile : 'scripture-flow-memory-bank';
         const $ = id => document.getElementById(id);
@@ -1832,6 +1867,7 @@
             unlock.currentTime = 0;
             unlock.play().catch(() => {});
             mainCard.classList.add('completion-glow');
+	    playCompletionSound();
             setTimeout(() => mainCard.classList.remove('completion-glow'), 2000);
             if (currentMode === 'memory') {
                 const bank = getMemoryBank();
